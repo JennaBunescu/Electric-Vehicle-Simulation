@@ -4,8 +4,8 @@
 class DriverInput{
 private:
 
-    double throttle;  //0.0 to 1.0
-    double brake;     //0.0 to 1.0
+    double throttle;  // 0.0 to 1.0
+    double brake;     // 0.0 to 1.0
     
 public:
     DriverInput();
