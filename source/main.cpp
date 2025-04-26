@@ -5,6 +5,9 @@
 #include "../headers/components.h"
 #include "../headers/driver_input.h"
 #include <SFML/Graphics.hpp>
+//big thanks to chatgpt lol
+//
+
 
 using namespace std;
 
