@@ -29,78 +29,66 @@ class Battery{ //If it receives a signal from the controller, the battery transm
     // 3. using regenerative braking?
     // 4. connecting the battery's voltage to the motor
     public:
-    Battery(){
+        Battery();
+        void set_Q_max();
+        void set_Q_current();
+        void set_V_max();
+        void set_R_internal();
+        void set_SOC();
+        void set_SOH();
+        void set_temp();
 
-        Q_max = 100;
-        Q_current = 0;
-        V_max = 0;
-        R_internal = 0;
-        stateOfCharge = 100;
-        stateOfHealth = 100;
-        temperature = 0;
-        voltage = 0;
-        current = 0;
+        float get_SOC();
+        float get_Q_max();
+        float get_Q_current();
+        float get_V_max();
+        float get_R_internal();
+        float get_SOH();
+        float get_temp();
 
-    }
-    void set_Q_max();
-    void set_Q_current();
-    void set_V_max();
-    void set_R_internal();
-    void set_SOC();
-    void set_SOH();
-    void set_temp();
+        //this function should be called every time the speed changes, 
+        //to register the previous speed and for how long it ran
 
-    float get_SOC();
-    float get_Q_max();
-    float get_Q_current();
-    float get_V_max();
-    float get_R_internal();
-    float get_SOH();
-    float get_temp();
+        //or another option is to update this function every fraction of a second and 
+        //use that time increment instead of total time, and keep updating 
+        //the current charge
+        void discharge(float speed);
 
-    //this function should be called every time the speed changes, 
-    //to register the previous speed and for how long it ran
-
-    //or another option is to update this function every fraction of a second and 
-    //use that time increment instead of total time, and keep updating 
-    //the current charge
-    void discharge(float speed);
-
-    void charge(float V_applied, float time);
+        void charge(float V_applied, float time);
 
 
 };
 
-class Motor{
-    private:
-        double powerRating_kWh;
-        double efficiency;
-        double rpm;
+// class Motor{
+//     private:
+//         double powerRating_kWh;
+//         double efficiency;
+//         double rpm;
 
-    public:
-
-
-
-};
+//     public:
 
 
-class Charger{
 
-    private:
+// };
+
+
+// class Charger{
+
+//     private:
         
-        float maxPowerOutput;
-        float efficiency;
+//         float maxPowerOutput;
+//         float efficiency;
 
 
-    public:
+//     public:
 
-    void startCharging(Battery* battery);
-    void stopCharging();
-};
+//     void startCharging(Battery* battery);
+//     void stopCharging();
+// };
 
 
-class Display{
+// class Display{
 
-};
+// };
 
 #endif

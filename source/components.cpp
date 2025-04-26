@@ -1,8 +1,19 @@
 #include <iostream>
-#include "components.h"
+#include "../headers/components.h"
 using namespace std;
 
 
+Battery::Battery(){
+    Q_max = 100;
+    Q_current = 0;
+    V_max = 0;
+    R_internal = 0;
+    stateOfCharge = 100;
+    stateOfHealth = 100;
+    temperature = 0;
+    voltage = 0;
+    current = 0;
+};
 
 float Battery::get_SOC() {
     //the current state of charge in percent is the ratio of charge remaining and max charge capacity
