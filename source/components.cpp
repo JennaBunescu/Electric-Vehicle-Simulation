@@ -5,7 +5,7 @@ using namespace std;
 
 Battery::Battery(){
     Q_max = 100;
-    Q_current = 0;
+    Q_current = 100;
     V_max = 0;
     R_internal = 0;
     stateOfCharge = 100;
