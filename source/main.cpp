@@ -12,7 +12,8 @@
 //going on in this project so let's do that when we meet up
 //
 //next steps:
-//- finish all classes
+//- finish all classes (biggest part - there is a lot of interplay between classes)
+//- add more classes maybe (? environment per chance)
 //- incorporate file I/O by creating a graph of our battery SOC over time
 //      here we could use vectors to log our SOC data over time
 //- I'm also thinking of adding an "admin console" that would allow us

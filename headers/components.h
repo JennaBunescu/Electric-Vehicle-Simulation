@@ -76,23 +76,23 @@ private:
 
 
 
-// class Charger{
+class Charger{
 
-//     private:
+    private:
         
-//         float maxPowerOutput;
-//         float efficiency;
+        float maxPowerOutput;
+        float efficiency;
 
 
-//     public:
+    public:
 
-//     void startCharging(Battery* battery);
-//     void stopCharging();
-// };
+    void startCharging(Battery* battery);
+    void stopCharging();
+};
 
 
-// class Display{
+class Display{
 
-// };
+};
 
 #endif

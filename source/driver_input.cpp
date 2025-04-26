@@ -1,27 +1,27 @@
 #include "driver_input.h"
 
-DriverInput::DriverInput() : throttle(0.0), brake(0.0) {}
+DriverInput::DriverInput() : throttlePosition(0.0), brakePosition(0.0) {}
 
 void DriverInput::pressThrottle(double intensity) {
-    throttle = (intensity > 1.0) ? 1.0 : (intensity < 0.0) ? 0.0 : intensity;
+    throttlePosition = (intensity > 1.0) ? 1.0 : (intensity < 0.0) ? 0.0 : intensity;
 }
 
 void DriverInput::pressBrake(double intensity) {
-    brake = (intensity > 1.0) ? 1.0 : (intensity < 0.0) ? 0.0 : intensity;
+    brakePosition = (intensity > 1.0) ? 1.0 : (intensity < 0.0) ? 0.0 : intensity;
 }
 
 void DriverInput::releaseThrottle() {
-    throttle = 0.0;
+    throttlePosition = 0.0;
 }
 
 void DriverInput::releaseBrake() {
-    brake = 0.0;
+    brakePosition = 0.0;
 }
 
 double DriverInput::getThrottle() const{
-    return throttle;
+    return throttlePosition;
 }
 
 double DriverInput::getBrake() const{ 
-    return brake; 
+    return brakePosition; 
 }
