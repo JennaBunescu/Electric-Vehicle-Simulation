@@ -8,7 +8,16 @@
 
 //big thanks to chatgpt lol
 //
-
+// now that I'm thinking about it I realize I need to catch you up on everything that's
+//going on in this project so let's do that when we meet up
+//
+//next steps:
+//- finish all classes
+//- incorporate file I/O by creating a graph of our battery SOC over time
+//      here we could use vectors to log our SOC data over time
+//- I'm also thinking of adding an "admin console" that would allow us
+//      to set the different parameters in real time so we can see how the 
+//      car would react to that
 
 using namespace std;
 

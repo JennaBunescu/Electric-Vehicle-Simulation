@@ -11,7 +11,6 @@ class Battery{ //If it receives a signal from the controller, the battery transm
         double Q_current;
         double V_max;
         double R_internal;
-        double stateOfCharge;
         double stateOfHealth;
         double temperature;
         double voltage;
@@ -30,13 +29,12 @@ class Battery{ //If it receives a signal from the controller, the battery transm
     // 4. connecting the battery's voltage to the motor
     public:
         Battery();
-        void set_Q_max();
-        void set_Q_current();
-        void set_V_max();
-        void set_R_internal();
-        void set_SOC();
-        void set_SOH();
-        void set_temp();
+        void set_Q_max(float Q);
+        void set_Q_current(float Q);
+        void set_V_max(float V);
+        void set_R_internal(float R);
+        void set_SOH(float SOH);
+        void set_temp(float T);
 
         float get_SOC();
         float get_Q_max();
@@ -59,17 +57,23 @@ class Battery{ //If it receives a signal from the controller, the battery transm
 
 };
 
-// class Motor{
-//     private:
-//         double powerRating_kWh;
-//         double efficiency;
-//         double rpm;
+class Motor {
+private:
+    float currentDemand;  // Current required by the motor in Amps
+    float speed;          // Speed of the vehicle in km/h
+    float powerRating;    // Power rating in kilowatts (kW)
+    float maxCurrent;     // Max current the motor can draw (in Amps)
+    float efficiency;     // Efficiency of the motor (between 0 and 1)
+    float maxSpeed;       // Maximum motor speed (RPM)
+    float torque;         // Torque provided by the motor (Nm)
 
-//     public:
+    
 
+    void updateMotor(DriverInput& driverInput, float batteryVoltage);
+    void updateSpeed();
 
+};
 
-// };
 
 
 // class Charger{

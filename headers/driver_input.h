@@ -4,11 +4,13 @@
 class DriverInput{
 private:
 
-    double throttle;  // 0.0 to 1.0
-    double brake;     // 0.0 to 1.0
+    float throttlePosition;  // 0.0 to 1.0
+    float brakePosition;     // 0.0 to 1.0
     
 public:
     DriverInput();
+    float getThrottlePos();
+    float getBrakePos();
     void pressThrottle(double intensity);
     void pressBrake(double intensity);
     void releaseThrottle();
