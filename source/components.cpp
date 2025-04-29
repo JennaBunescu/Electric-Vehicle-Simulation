@@ -29,7 +29,7 @@ void Battery::discharge(float speed) {
     const float delta_t = 0.1; // Time step in seconds (adjust as needed)
     float deltaQ = 0.01 * speed * delta_t;
     Q_current -= deltaQ;
-
+//aluminum future type (current research`)
     //prevent battery from going below 0
     if (Q_current < 0) {
         Q_current = 0;
@@ -100,9 +100,14 @@ float Battery::get_SOH(){
 float Battery::get_temp(){
     return temperature;
 }
+//regenerative - both when you brake and when you take foot off?
+//modeling the engine - design the engine's circuit, analyze the circuit
+//and use the formulas to find the motor actions
 
+//spring mass damper model, when you press down you exert a force, then there will be a transducer
+//and a variable resistor which would change the voltage sent to the control
 
-
+//put the parameters in a file of a route
 
 ////// Motor
 
