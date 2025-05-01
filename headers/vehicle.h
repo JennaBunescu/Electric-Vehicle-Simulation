@@ -8,6 +8,7 @@ class EV{
     private:
 
         float mass;
+        float wheelRadius;
         float dragCoefficient;
         float frontalArea;
         float speed;

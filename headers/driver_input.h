@@ -9,8 +9,8 @@ private:
     
 public:
     DriverInput();
-    float getThrottlePos();
-    float getBrakePos();
+    float get_throttle();
+    float get_brake();
     void pressThrottle(double intensity);
     void pressBrake(double intensity);
     void releaseThrottle();

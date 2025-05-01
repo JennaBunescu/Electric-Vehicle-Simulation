@@ -1,6 +1,8 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 #include <iostream>
+#include "driver_input.h"
+#include <chrono>
 using namespace std;
 
 
@@ -65,12 +67,16 @@ private:
     float maxCurrent;     // Max current the motor can draw (in Amps)
     float efficiency;     // Efficiency of the motor (between 0 and 1)
     float maxSpeed;       // Maximum motor speed (RPM)
-    float torque;         // Torque provided by the motor (Nm)
+    const float maxTorque = 200.0f;      //200.0f
+    const float maxBrakeTorque = 300.0f; //300.0f
+    const float inertia = 10.0f;; //10.0f
+    const float wheelRadius = 0.3f;; //0.3f
 
-    
-
-    void updateMotor(DriverInput& driverInput, float batteryVoltage);
-    void updateSpeed();
+public:
+    Motor(){
+        
+    }
+    void updateMotor(DriverInput& driverInput, float batteryVoltage, float deltaTime);
 
 };
 

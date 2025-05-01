@@ -111,48 +111,33 @@ float Battery::get_temp(){
 
 ////// Motor
 
-
-//function to update motor's current demand based on driver's throttle and brake input
-void Motor::updateMotor(DriverInput& driverInput, float batteryVoltage){
-
-    //calculate current demand based on throttle (simplified)
-    if (driverInput.getThrottlePos() > 0){
-
-        //accelerating: motor needs more current to provide power
-        float desiredPower = driverInput.getThrottlePos() * powerRating;//desired power in kW
-        currentDemand = (desiredPower * 1000) / batteryVoltage; //convert to current in Amps
-
-        if (currentDemand > maxCurrent){
-            currentDemand = maxCurrent;  //limit to max current
-        }
-
-        //calculate torque (simplified)
-        torque = desiredPower * 1000 / maxSpeed;  //in N*m
-
-    } else if (driverInput.getBrakePos() > 0){
-        //regenerative brakng
-        float regenPower = driverInput.getBrakePos() * powerRating;
-        currentDemand = -regenPower * 1000 / batteryVoltage; //negative current for regenerative braking
-
-        //regenerative torque (simplified)
-        torque = regenPower * 1000 / maxSpeed;
-
-    } else {
-        //no current demand (idle state)
-        currentDemand = 0;
-        torque = 0;
-    }
-
-    //calculate motor efficiency (could impact current demand)
-    currentDemand /= efficiency;//adjust for efficiency losses
-}
-
-//function to update vehicle speed based on motor torque
-void Motor::updateSpeed() {
-    //simplified model: vehicle speed is proportional to motor torque
-    speed = torque * 0.1f;  //this is just a simplified relation for demonstration
+Motor::Motor(){
     
-    if (speed > maxSpeed){
-        speed = maxSpeed;  //limit speed to max motor speed
-    }
 }
+
+
+void Motor::updateMotor(DriverInput& driverInput, float batteryVoltage, float deltaTime) {
+    static float angularSpeed = 0.0f;
+
+    float throttle = driverInput.get_throttle();
+    float brake = driverInput.get_brake();
+
+    if (throttle > 0) {
+        float torque = throttle * maxTorque;
+        float angularAcceleration = torque / inertia;
+        angularSpeed += angularAcceleration * deltaTime;
+    }
+
+    if (brake > 0) {
+        float brakeTorque = brake * maxBrakeTorque;
+        float angularDeceleration = brakeTorque / inertia;
+        angularSpeed -= angularDeceleration * deltaTime;
+
+    if (angularSpeed < 0)
+        angularSpeed = 0;
+    }
+
+    float linearSpeed = wheelRadius * angularSpeed;
+    cout << "Speed: " << linearSpeed << " m/s\n";
+}
+
