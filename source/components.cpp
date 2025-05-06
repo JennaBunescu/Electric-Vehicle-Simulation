@@ -117,6 +117,7 @@ float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float delta
     static float angularSpeed = 0.0f;
 
     float throttle = driverInput.get_throttle();
+    cout << "From motor class: throttle: " << driverInput.get_throttle() <<endl; 
     float brake = driverInput.get_brake();
 
     //apply throttle torque
@@ -139,15 +140,16 @@ float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float delta
         float angularDeceleration = dragTorque / inertia;
         angularSpeed -= angularDeceleration * deltaTime;
     }
-
     //clamp angularSpeed to 0 to avoid going backward
     if (angularSpeed < 0){
         angularSpeed = 0;
-
-    //convert to linear speed
-    this->speed = wheelRadius * angularSpeed;
+    cout << "Angular speed: " << angularSpeed << endl;
     }
-    
+
+        //convert to linear speed
+    this->speed = wheelRadius * angularSpeed;
+
+    cout << "This speed: " << this->speed << endl;
     //limit speed to maxSpeed
     if (this->speed > maxSpeed){
         this->speed = maxSpeed;
