@@ -7,15 +7,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>  // For sf::Clock
 
-//steps:
-//- finish all classes (biggest part - there is a lot of interplay between classes)
-//- add more classes maybe (? environment per chance)
-//- incorporate file I/O by creating a graph of our battery SOC over time
-//      here we could use vectors to log our SOC data over time
-//- I'm also thinking of adding an "admin console" that would allow us
-//      to set the different parameters in real time so we can see how the 
-//      car would react to that
-
 using namespace std;
 
 int main() {
@@ -84,6 +75,16 @@ int main() {
     sf::RectangleShape batteryBox(sf::Vector2f(200, 100)); // Box for SOC, on the left
     batteryBox.setFillColor(sf::Color(0, 0, 0, 150)); // Semi-transparent black
 
+    // Create a background box for the speed display (box)
+    sf::RectangleShape speedBox(sf::Vector2f(200, 50)); // Box for speed display
+    speedBox.setFillColor(sf::Color(0, 0, 0, 150)); // Semi-transparent black
+
+    // Create a text object for speed
+    sf::Text speedText;
+    speedText.setFont(font);
+    speedText.setCharacterSize(24);
+    speedText.setFillColor(sf::Color::White);
+
     // Main loop
     float roadYPosition = 0.0f;  // Starting position of the road texture
 
@@ -96,24 +97,27 @@ int main() {
                 window.close();
         }
 
-                // --- HANDLE DRIVER INPUT ---
+        // --- HANDLE DRIVER INPUT ---
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
             input.set_throttle(1.0f);  // Full throttle
+            cout << "Throttle: " << input.get_throttle() << endl; // Debug output
         } else {
             input.set_throttle(0.0f);
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
             input.set_brake(1.0f);  // Full brake
+            cout << "Brake: " << input.get_brake() << endl; // Debug output
         } else {
             input.set_brake(0.0f);
         }
 
         // Update speed based on input and battery state
         vehicleSpeed = motor.updateSpeed(input, battery, deltaTime);
+        cout << "Current Speed: " << vehicleSpeed << endl; // Debug output
 
         // Move the road upwards (simulate driving)
-        roadYPosition += 5.0f;  // Adjust speed by modifying this value
+        roadYPosition += vehicleSpeed * deltaTime;  // Adjust road speed based on car speed
         if (roadYPosition >= window.getSize().y) {
             roadYPosition = 0;  // Reset road position to loop
         }
@@ -122,9 +126,6 @@ int main() {
         roadSprite1.setPosition(0, roadYPosition);
         roadSprite2.setPosition(0, roadYPosition - window.getSize().y);
         roadSprite3.setPosition(0, roadYPosition - 2 * window.getSize().y);
-
-        // Simulate battery discharge
-        // battery.discharge(1.0f, delta_t);
 
         // Update battery bar scale based on SOC
         float socScale = battery.get_SOC() / 100.0f;
@@ -138,6 +139,10 @@ int main() {
         // Update text for SOC display
         text.setString("Battery SOC: " + to_string(static_cast<int>(battery.get_SOC())) + "%");
         text.setPosition(20, window.getSize().y / 2 + 30);  // Place text below the battery image
+
+        // Update speed text
+        speedText.setString("Speed: " + to_string(static_cast<int>(vehicleSpeed)) + " m/s");
+        speedText.setPosition(20, window.getSize().y / 2 - 50);  // Position it below the battery
 
         // Clear window with sky blue background
         window.clear(sf::Color(135, 206, 235)); // Sky blue background
@@ -156,44 +161,16 @@ int main() {
         window.draw(batterySprite);
         window.draw(text);
 
+        // Draw speed box and speed text
+        window.draw(speedBox);
+        window.draw(speedText);
+
         // Display everything
         window.display();
 
         // Delay for smoother movement
         std::this_thread::sleep_for(std::chrono::milliseconds(16));  // ~60 FPS
-
-    // Calculate deltaTime (in seconds)
-    float deltaTime = deltaClock.restart().asSeconds();
-
-    // // --- HANDLE DRIVER INPUT ---
-    // DriverInput input;
-    // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
-    //     input.set_throttle(1.0f);  // Full throttle
-    // } else {
-    //     input.set_throttle(0.0f);
-    // }
-
-    // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
-    //     input.set_brake(1.0f);  // Full brake
-    // } else {
-    //     input.set_brake(0.0f);
-    // }
-
-    // // Get current battery voltage
-    // float batteryVoltage = battery.get_voltage();  // Assuming you have this method
-
-    // // Call updateMotor to compute new speed
-    // angularSpeed = updateMotor(input, batteryVoltage, deltaTime, angularSpeed);
-
-    // // (Optional) Use angularSpeed to influence visuals, e.g., road scroll speed
-    // roadYPosition += angularSpeed * deltaTime * 50.0f;  // Adjust multiplier as needed
-
-    // Delay for smoother movement (can remove if using vsync or deltaTime properly)
-    std::this_thread::sleep_for(std::chrono::milliseconds(16));
-    
     }
-
-
 
     return 0;
 }

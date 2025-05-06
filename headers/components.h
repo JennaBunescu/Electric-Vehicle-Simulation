@@ -4,32 +4,6 @@
 #include "driver_input.h"
 using namespace std;
 
-class Motor {
-private:
-    float currentDemand;  // Current required by the motor in Amps
-    float speed;          // Speed of the vehicle in km/h
-    float powerRating;    // Power rating in kilowatts (kW)
-    float maxCurrent;     // Max current the motor can draw (in Amps)
-    float efficiency;     // Efficiency of the motor (between 0 and 1)
-    float maxSpeed;       // Maximum motor speed (RPM)
-    const float maxTorque = 200.0f;      //200.0f
-    const float maxBrakeTorque = 300.0f; //300.0f
-    const float inertia = 10.0f;; //10.0f
-    const float wheelRadius = 0.3f;; //0.3f
-
-public:
-    Motor(){
-        
-    }
-
-    float updateSpeed(DriverInput& driverInput, Battery &battery, float deltaTime);
-    void encounterObstacle(){
-        //change "force" throttle/brake of the driver input
-        updateSpeed;    
-    }
-
-};
-
 
 class Battery{ //If it receives a signal from the controller, the battery transmits DC electrical energy to the motor.
 //lithium ion battery
@@ -84,6 +58,28 @@ class Battery{ //If it receives a signal from the controller, the battery transm
 
 };
 
+class Motor {
+private:
+    float currentDemand;  // Current required by the motor in Amps
+    float speed;          // Speed of the vehicle in km/h
+    float powerRating;    // Power rating in kilowatts (kW)
+    float maxCurrent;     // Max current the motor can draw (in Amps)
+    float efficiency;     // Efficiency of the motor (between 0 and 1)
+    float maxSpeed;       // Maximum motor speed (RPM)
+    const float maxTorque = 200.0f;      //200.0f
+    const float maxBrakeTorque = 300.0f; //300.0f
+    const float inertia = 10.0f;; //10.0f
+    const float wheelRadius = 0.3f;; //0.3f
+
+public:
+    Motor();
+
+    float updateSpeed(DriverInput& driverInput, Battery &battery, float deltaTime);
+    void encounterObstacle(){
+        //change "force" throttle/brake of the driver input 
+    }
+
+};
 
 
 class Charger{

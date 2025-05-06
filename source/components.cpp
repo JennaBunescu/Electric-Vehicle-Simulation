@@ -109,6 +109,10 @@ float Battery::get_temp(){
 
 //put the parameters in a file of a route
 ////// Motor
+Motor::Motor(){
+    maxSpeed = 100;
+}
+
 float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float deltaTime) {
     static float angularSpeed = 0.0f;
 
