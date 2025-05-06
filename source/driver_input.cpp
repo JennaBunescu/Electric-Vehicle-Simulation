@@ -1,4 +1,4 @@
-#include "driver_input.h"
+#include "../headers/driver_input.h"
 
 DriverInput::DriverInput() : throttlePosition(0.0f), brakePosition(0.0f) {}
 
