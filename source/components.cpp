@@ -4,6 +4,7 @@
 using namespace std;
 
 
+
 ///// Battery
 
 Battery::Battery() {
@@ -18,18 +19,17 @@ Battery::Battery() {
 };
 
 
-float Battery::get_SOC() {
+float Battery::get_SOC(){
     //the current state of charge in percent is the ratio of charge remaining and max charge capacity
     return (Q_current / Q_max) * 100.0;
 }
 
 //this function should be called repeatedly every fraction of a second
 //and it updates the battery charge incrementally.
-void Battery::discharge(float speed) {
-    const float delta_t = 0.1; // Time step in seconds (adjust as needed)
+void Battery::discharge(float speed, float delta_t){
     float deltaQ = 0.01 * speed * delta_t;
     Q_current -= deltaQ;
-//aluminum future type (current research`)
+
     //prevent battery from going below 0
     if (Q_current < 0) {
         Q_current = 0;
@@ -108,36 +108,50 @@ float Battery::get_temp(){
 //and a variable resistor which would change the voltage sent to the control
 
 //put the parameters in a file of a route
-
 ////// Motor
-
-Motor::Motor(){
-    
-}
-
-
-void Motor::updateMotor(DriverInput& driverInput, float batteryVoltage, float deltaTime) {
+float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float deltaTime) {
     static float angularSpeed = 0.0f;
 
     float throttle = driverInput.get_throttle();
     float brake = driverInput.get_brake();
 
-    if (throttle > 0) {
+    //apply throttle torque
+    if (throttle > 0){
         float torque = throttle * maxTorque;
         float angularAcceleration = torque / inertia;
         angularSpeed += angularAcceleration * deltaTime;
     }
 
-    if (brake > 0) {
+    //apply braking torque
+    if (brake > 0){
         float brakeTorque = brake * maxBrakeTorque;
         float angularDeceleration = brakeTorque / inertia;
         angularSpeed -= angularDeceleration * deltaTime;
-
-    if (angularSpeed < 0)
-        angularSpeed = 0;
     }
 
-    float linearSpeed = wheelRadius * angularSpeed;
-    cout << "Speed: " << linearSpeed << " m/s\n";
-}
+    //apply passive drag when neither throttle nor brake are applied
+    if (throttle == 0 && brake == 0) {
+        float dragTorque = 0.05f * maxTorque;
+        float angularDeceleration = dragTorque / inertia;
+        angularSpeed -= angularDeceleration * deltaTime;
+    }
 
+    //clamp angularSpeed to 0 to avoid going backward
+    if (angularSpeed < 0){
+        angularSpeed = 0;
+
+    //convert to linear speed
+    this->speed = wheelRadius * angularSpeed;
+    }
+    
+    //limit speed to maxSpeed
+    if (this->speed > maxSpeed){
+        this->speed = maxSpeed;
+    }
+
+    cout << "Speed: " << speed << " m/s\n";
+
+    battery.discharge(speed, deltaTime);  //each time the speed updates, update SOC
+
+    return speed;
+}

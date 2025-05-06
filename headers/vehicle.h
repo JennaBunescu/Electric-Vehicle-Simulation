@@ -4,16 +4,20 @@
 #include <iostream>
 using namespace std;
 
+//implementing inheritance by having all the components be inherited from EV
+//in that way we can use the variable speed for all of them, and maybe other things too
 class EV{
     private:
+
+        float speed; //this is needed for both the battery and the motor
 
         float mass;
         float wheelRadius;
         float dragCoefficient;
         float frontalArea;
-        float speed;
         Battery* battery;
         Motor* motor;
+        bool obstacle;
 
     public:
 

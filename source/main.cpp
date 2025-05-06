@@ -5,13 +5,9 @@
 #include "../headers/components.h"
 #include "../headers/driver_input.h"
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>  // For sf::Clock
 
-//big thanks to chatgpt lol
-//
-// now that I'm thinking about it I realize I need to catch you up on everything that's
-//going on in this project so let's do that when we meet up
-//
-//next steps:
+//steps:
 //- finish all classes (biggest part - there is a lot of interplay between classes)
 //- add more classes maybe (? environment per chance)
 //- incorporate file I/O by creating a graph of our battery SOC over time
@@ -23,9 +19,15 @@
 using namespace std;
 
 int main() {
+    // At the top of main(), before the loop:
+    sf::Clock deltaClock;  // Tracks time between frames
+
     sf::RenderWindow window(sf::VideoMode(800, 600), "Electric Vehicle Simulation");
 
     Battery battery;
+    DriverInput input;
+    Motor motor;
+    float vehicleSpeed = 0.0;
 
     // Load car image (bird's eye view)
     sf::Texture carTexture;
@@ -87,10 +89,28 @@ int main() {
 
     while (window.isOpen()) {
         sf::Event event;
+        float deltaTime = deltaClock.restart().asSeconds();
+
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
+
+                // --- HANDLE DRIVER INPUT ---
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+            input.set_throttle(1.0f);  // Full throttle
+        } else {
+            input.set_throttle(0.0f);
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+            input.set_brake(1.0f);  // Full brake
+        } else {
+            input.set_brake(0.0f);
+        }
+
+        // Update speed based on input and battery state
+        vehicleSpeed = motor.updateSpeed(input, battery, deltaTime);
 
         // Move the road upwards (simulate driving)
         roadYPosition += 5.0f;  // Adjust speed by modifying this value
@@ -104,7 +124,7 @@ int main() {
         roadSprite3.setPosition(0, roadYPosition - 2 * window.getSize().y);
 
         // Simulate battery discharge
-        battery.discharge(1.0f);
+        // battery.discharge(1.0f, delta_t);
 
         // Update battery bar scale based on SOC
         float socScale = battery.get_SOC() / 100.0f;
@@ -141,7 +161,39 @@ int main() {
 
         // Delay for smoother movement
         std::this_thread::sleep_for(std::chrono::milliseconds(16));  // ~60 FPS
+
+    // Calculate deltaTime (in seconds)
+    float deltaTime = deltaClock.restart().asSeconds();
+
+    // // --- HANDLE DRIVER INPUT ---
+    // DriverInput input;
+    // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+    //     input.set_throttle(1.0f);  // Full throttle
+    // } else {
+    //     input.set_throttle(0.0f);
+    // }
+
+    // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+    //     input.set_brake(1.0f);  // Full brake
+    // } else {
+    //     input.set_brake(0.0f);
+    // }
+
+    // // Get current battery voltage
+    // float batteryVoltage = battery.get_voltage();  // Assuming you have this method
+
+    // // Call updateMotor to compute new speed
+    // angularSpeed = updateMotor(input, batteryVoltage, deltaTime, angularSpeed);
+
+    // // (Optional) Use angularSpeed to influence visuals, e.g., road scroll speed
+    // roadYPosition += angularSpeed * deltaTime * 50.0f;  // Adjust multiplier as needed
+
+    // Delay for smoother movement (can remove if using vsync or deltaTime properly)
+    std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    
     }
+
+
 
     return 0;
 }

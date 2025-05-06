@@ -11,12 +11,8 @@ public:
     DriverInput();
     float get_throttle();
     float get_brake();
-    void pressThrottle(double intensity);
-    void pressBrake(double intensity);
-    void releaseThrottle();
-    void releaseBrake();
-    double getThrottle() const;
-    double getBrake() const;
+    void set_throttle(double intensity);
+    void set_brake(double intensity);
 };
 
 #endif

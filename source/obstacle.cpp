@@ -189,39 +189,39 @@ void Bus::honk() {
     cout << brand << " honks!" << endl;
 }
 
-int main() {
-    // Vehicles
-    Car myCar("Toyota", 120, 4);
-    Bicycle myBike("Trek", 25, true);
-    Motorcycle myMotorcycle("Harley-Davidson", 150);
-    Truck myTruck("Volvo", 90);
-    Bus myBus("Mercedes", 80, 50);
+// int main() {
+//     // Vehicles
+//     Car myCar("Toyota", 120, 4);
+//     Bicycle myBike("Trek", 25, true);
+//     Motorcycle myMotorcycle("Harley-Davidson", 150);
+//     Truck myTruck("Volvo", 90);
+//     Bus myBus("Mercedes", 80, 50);
 
-    cout << "--- Vehicles ---" << endl;
-    myCar.display();
-    myBike.display();
-    myMotorcycle.display();
-    myTruck.display();
-    myBus.display();
+//     cout << "--- Vehicles ---" << endl;
+//     myCar.display();
+//     myBike.display();
+//     myMotorcycle.display();
+//     myTruck.display();
+//     myBus.display();
 
-    cout << "\n--- Honking ---" << endl;
-    myCar.honk();
-    myBike.honk();
-    myMotorcycle.honk();
-    myTruck.honk();
-    myBus.honk();
+//     cout << "\n--- Honking ---" << endl;
+//     myCar.honk();
+//     myBike.honk();
+//     myMotorcycle.honk();
+//     myTruck.honk();
+//     myBus.honk();
 
-    cout << "\n--- Accelerate and Decelerate ---" << endl;
-    myCar.accelerate();
-    myBike.decelerate();
+//     cout << "\n--- Accelerate and Decelerate ---" << endl;
+//     myCar.accelerate();
+//     myBike.decelerate();
 
-    cout << "\n--- Changing Lanes ---" << endl;
-    myCar.changeLanes("left");
-    myMotorcycle.changeLanes("right");
+//     cout << "\n--- Changing Lanes ---" << endl;
+//     myCar.changeLanes("left");
+//     myMotorcycle.changeLanes("right");
 
-    cout << "\n--- Turn Signals ---" << endl;
-    myCar.turnSignal("left");
-    myTruck.turnSignal("right");
+//     cout << "\n--- Turn Signals ---" << endl;
+//     myCar.turnSignal("left");
+//     myTruck.turnSignal("right");
 
-    return 0;
-}
+//     return 0;
+// }

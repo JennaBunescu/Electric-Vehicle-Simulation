@@ -2,12 +2,37 @@
 #define COMPONENTS_H
 #include <iostream>
 #include "driver_input.h"
-#include <chrono>
 using namespace std;
 
+class Motor {
+private:
+    float currentDemand;  // Current required by the motor in Amps
+    float speed;          // Speed of the vehicle in km/h
+    float powerRating;    // Power rating in kilowatts (kW)
+    float maxCurrent;     // Max current the motor can draw (in Amps)
+    float efficiency;     // Efficiency of the motor (between 0 and 1)
+    float maxSpeed;       // Maximum motor speed (RPM)
+    const float maxTorque = 200.0f;      //200.0f
+    const float maxBrakeTorque = 300.0f; //300.0f
+    const float inertia = 10.0f;; //10.0f
+    const float wheelRadius = 0.3f;; //0.3f
 
-class Battery{ //If it receives a signal from the controller, the battery transmits DC electrical energy to the inverter and then uses it to drive the motor.
-//lithium ion batteries, Nickel-Metal Hydride Batteries, Lead-acid Batteries
+public:
+    Motor(){
+        
+    }
+
+    float updateSpeed(DriverInput& driverInput, Battery &battery, float deltaTime);
+    void encounterObstacle(){
+        //change "force" throttle/brake of the driver input
+        updateSpeed;    
+    }
+
+};
+
+
+class Battery{ //If it receives a signal from the controller, the battery transmits DC electrical energy to the motor.
+//lithium ion battery
     private:
         double Q_max;
         double Q_current;
@@ -27,7 +52,7 @@ class Battery{ //If it receives a signal from the controller, the battery transm
     // 2. connecting the charger's properties with the battery charge
     //    lets assume for now that the charge is proportional to the voltage provided and time
     //    so deltaQ = time * V/R;
-    // 3. using regenerative braking?
+    // 3. using regenerative braking? NO
     // 4. connecting the battery's voltage to the motor
     public:
         Battery();
@@ -52,31 +77,10 @@ class Battery{ //If it receives a signal from the controller, the battery transm
         //or another option is to update this function every fraction of a second and 
         //use that time increment instead of total time, and keep updating 
         //the current charge
-        void discharge(float speed);
+        void discharge(float speed, float delta_t);
 
         void charge(float V_applied, float time);
 
-
-};
-
-class Motor {
-private:
-    float currentDemand;  // Current required by the motor in Amps
-    float speed;          // Speed of the vehicle in km/h
-    float powerRating;    // Power rating in kilowatts (kW)
-    float maxCurrent;     // Max current the motor can draw (in Amps)
-    float efficiency;     // Efficiency of the motor (between 0 and 1)
-    float maxSpeed;       // Maximum motor speed (RPM)
-    const float maxTorque = 200.0f;      //200.0f
-    const float maxBrakeTorque = 300.0f; //300.0f
-    const float inertia = 10.0f;; //10.0f
-    const float wheelRadius = 0.3f;; //0.3f
-
-public:
-    Motor(){
-        
-    }
-    void updateMotor(DriverInput& driverInput, float batteryVoltage, float deltaTime);
 
 };
 
