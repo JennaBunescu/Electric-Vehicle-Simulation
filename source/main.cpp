@@ -5,16 +5,18 @@
 #include "../headers/components.h"
 #include "../headers/driver_input.h"
 #include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>  // For sf::Clock
+#include <SFML/System.hpp>  //for sf::Clock
 
 using namespace std;
 
-int main() {
-    // At the top of main(), before the loop:
-    sf::Clock deltaClock;  // Tracks time between frames
+int main(){
+    //Use Clock to track times between frames. This will be used for deltaTime later on in the code.
+    sf::Clock deltaClock;
 
+    //This creates a window of the specified parameters
     sf::RenderWindow window(sf::VideoMode(800, 600), "Electric Vehicle Simulation");
 
+    //Initializing classes
     Battery battery;
     DriverInput input;
     Motor motor;
