@@ -24,7 +24,7 @@ int main(){
 
     // Load car image (bird's eye view)
     sf::Texture carTexture;
-    if (!carTexture.loadFromFile("car1.png")) {
+    if (!carTexture.loadFromFile("./assets/car1.png")) {
         cout << "❌ Error loading car image" << endl;
         return -1;
     }
@@ -34,7 +34,7 @@ int main(){
 
     // Load road images (road1, road2, road3)
     sf::Texture roadTexture1, roadTexture2, roadTexture3;
-    if (!roadTexture1.loadFromFile("road1.png") || !roadTexture2.loadFromFile("road2.png") || !roadTexture3.loadFromFile("road3.png")) {
+    if (!roadTexture1.loadFromFile("./assets/road1.png") || !roadTexture2.loadFromFile("./assets/road2.png") || !roadTexture3.loadFromFile("./assets/road3.png")) {
         cout << "❌ Error loading road textures" << endl;
         return -1;
     }
@@ -50,7 +50,7 @@ int main(){
 
     // Load battery image (make sure path is correct)
     sf::Texture batteryTexture;
-    if (!batteryTexture.loadFromFile("./source/battery1.png")) {
+    if (!batteryTexture.loadFromFile("./assets/battery1.png")) {
         cout << "❌ Error loading battery texture from image. Check file path and format." << endl;
         return -1;
     } else {
