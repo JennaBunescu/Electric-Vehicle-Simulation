@@ -137,20 +137,25 @@ int main(){
                 inputDisplay.setPosition(100, 150);
             
                 // Define prompt text
-                std::string label;
+                string label;
+                
+                // Set label before drawing anything
                 switch (inputStage) {
                     case 0: label = "Enter Mass (kg): "; break;
                     case 1: label = "Enter Wheel Radius (m): "; break;
                     case 2: label = "Enter Drag Coefficient: "; break;
                     case 3: label = "Enter Frontal Area (m^2): "; break;
                 }
-            
+
                 prompt.setString(label);
                 inputDisplay.setString(inputStr);
-            
+
+                // Clear and draw updated content
+                window.clear();
                 window.draw(prompt);
                 window.draw(inputDisplay);
                 window.display();
+
             
                 // Event loop just for text entry
                 sf::Event ev;
@@ -179,6 +184,14 @@ int main(){
             
                         // Redraw UI
                         window.clear();
+
+                        switch (inputStage) {
+                            case 0: label = "Enter Mass (kg): "; break;
+                            case 1: label = "Enter Wheel Radius (m): "; break;
+                            case 2: label = "Enter Drag Coefficient: "; break;
+                            case 3: label = "Enter Frontal Area (m^2): "; break;
+                        }
+
                         prompt.setString(label);
                         inputDisplay.setString(inputStr);
                         window.draw(prompt);
