@@ -220,7 +220,6 @@ int main(){
                 window.close();
         }
 
-
         // Detect mouse click
         if (event.type == sf::Event::MouseButtonPressed) {
             if (event.mouseButton.button == sf::Mouse::Left) {
@@ -230,7 +229,6 @@ int main(){
                 
             }
         }
-
 
         // --- HANDLE DRIVER INPUT ---
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
@@ -249,6 +247,9 @@ int main(){
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::P)) {
             myEV.powerOff();
+            inputStage = 0;  // resets the input stage for parameters 
+            inputStr.clear(); 
+            // TODO: Make it so that the Battery and Motor class reset their values. (Speed stays across simulations even though parameters are changed)
         }
         
         // Update speed based on input and battery state
