@@ -9,7 +9,7 @@ using namespace std;
 
 Battery::Battery() {
     Q_max = 150;               // Max capacity in Ah (for a 60 kWh battery at 420 V)
-    Q_now = 150;           // Starting fully charged
+    Q_now = 150;               // Starting fully charged
     V_max = 420;               // Max voltage (fully charged state)
     R_internal = 0.02;         // Internal resistance in ohms (typical for EVs)
     stateOfHealth = 100;       // New battery starts at full health
@@ -21,31 +21,32 @@ Battery::Battery() {
 
 float Battery::get_SOC(){
     //the current state of charge in percent is the ratio of charge remaining and max charge capacity
-    return (Q_current / Q_max) * 100.0;
+    return (Q_now / Q_max) * 100.0;
 }
 
 //this function should be called repeatedly every fraction of a second
 //and it updates the battery charge incrementally.
 void Battery::discharge(float speed, float delta_t){
     float deltaQ = 0.01 * speed * delta_t;
-    Q_current -= deltaQ;
+    Q_now -= deltaQ;
 
     //prevent battery from going below 0
-    if (Q_current < 0) {
-        Q_current = 0;
+    if (Q_now < 0) {
+        Q_now = 0;
     }
 }
 
-void Battery::charge(float V_applied, float time){
-    float deltaQ = 0.01*V_applied/R_internal;
-    if(Q_current < Q_max){
-        Q_current += deltaQ;
-        if (Q_current >= Q_max) {
-            Q_current = Q_max;
+void Battery::charge(float V_applied, float deltaTime, bool &fullCharge){
+    //the change in charge is the current applied (V_applied/R_internal) times the change in time (which will be every frame)
+    float deltaQ = deltaTime*V_applied/R_internal; 
+    if(Q_now < Q_max){
+        Q_now += deltaQ;
+        if (Q_now >= Q_max) {
+            Q_now = Q_max;
         }
 
     } else { // this will be displayed on the car's screen, so we will probably need ofstream here to write this in the display file with "fout"
-        cout << "BATTERY FULL" << endl;
+        fullCharge = true;
         return;
     }
 
@@ -57,7 +58,7 @@ void Battery::set_Q_max(float Q){
 }
 
 void Battery::set_Q_current(float Q){
-    Q_current = Q;
+    Q_now = Q;
 }
 
 //we could also include a battery power output on the display
@@ -82,7 +83,7 @@ float Battery::get_Q_max(){
 }
 
 float Battery::get_Q_current(){
-    return Q_current;
+    return Q_now;
 }
 
 float Battery::get_V_max(){
@@ -122,6 +123,7 @@ float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float delta
 
     //apply throttle torque
     if (throttle > 0){
+
         float torque = throttle * maxTorque;
         float angularAcceleration = torque / inertia;
         angularSpeed += angularAcceleration * deltaTime;
@@ -146,16 +148,13 @@ float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float delta
     cout << "Angular speed: " << angularSpeed << endl;
     }
 
-        //convert to linear speed
+    //converting to linear speed, which depends on the wheel radius
     this->speed = wheelRadius * angularSpeed;
 
-    cout << "This speed: " << this->speed << endl;
     //limit speed to maxSpeed
     if (this->speed > maxSpeed){
         this->speed = maxSpeed;
     }
-
-    cout << "Speed: " << speed << " m/s\n";
 
     battery.discharge(speed, deltaTime);  //each time the speed updates, update SOC
 
@@ -165,7 +164,7 @@ float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float delta
 
 void Charger::stopCharging(Battery* battery) {
     if (battery) {
-        battery->set_Q_current(0.0f); // TODO: Double check if this needs to be Q current set to 0 or current set to 0. If it is just "current" then we need a setCurrent function in the battery class
+        battery->V_applied(0.0f); // TODO: Double check if this needs to be Q current set to 0 or current set to 0. If it is just "current" then we need a setCurrent function in the battery class
     }
     cout << "Charging stopped" << endl;
 }
