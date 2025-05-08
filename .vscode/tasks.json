@@ -9,48 +9,63 @@
             "command": "g++",
             "args": [
                 "-o",
-                "\"${workspaceFolder}\"/bin/main",
+                "${workspaceFolder}/bin/main",
                 "-I",
-                "\"${workspaceFolder}\"/headers",
+                "${workspaceFolder}/headers",
                 "-ggdb",
-                "\"${workspaceFolder}\"/source/*.cpp"
+                "${workspaceFolder}/source/*.cpp"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": [],
-            "options": {
-                "cwd": ""
-            }
+            "problemMatcher": []
         },
         {
-            "label": "build test project",
+            "label": "build-windows-sfml",
             "type": "shell",
             "command": "g++",
             "args": [
-                "-std=c++11",
+                "source/main.cpp",
+                "source/components.cpp",
+                "source/driver_input.cpp",
+                "source/obstacle.cpp",
+                "-IC:/SFML-2.6.2/include",
+                "-LC:/SFML-2.6.2/lib",
+                "-lsfml-graphics",
+                "-lsfml-window",
+                "-lsfml-system",
                 "-o",
-                "\"${workspaceFolder}\"/bin/testmain",
-                "-I",
-                "\"${workspaceFolder}\"/headers",
-                "-I",
-                "/usr/local/lib/googletest/googletest/googletest/include",
-                "-I",
-                "/usr/local/lib/googletest/googletest/googletest",
-                "-ggdb",
-                "\"${workspaceFolder}\"/tests/*.cpp",
-                "\"${workspaceFolder}\"/source/*.cpp",
-                "/usr/local/lib/googletest/googletest/googletest/src/gtest-all.cc"
+                "bin/main.exe"
             ],
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": false
             },
-            "problemMatcher": [],
-            "options": {
-                "cwd": ""
-            }
+            "problemMatcher": []
+        },
+        {
+            "label": "build-mac-sfml",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "source/main.cpp",
+                "source/components.cpp",
+                "source/driver_input.cpp",
+                "source/obstacle.cpp",
+                "-I/opt/homebrew/include",
+                "-L/opt/homebrew/lib",
+                "-lsfml-graphics",
+                "-lsfml-window",
+                "-lsfml-system",
+                "-o",
+                "bin/main"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
         },
         {
             "label": "run",
@@ -65,18 +80,18 @@
             "problemMatcher": []
         },
         {
-            "label": "run on windows cmd shell ",
+            "label": "run on windows cmd shell",
             "type": "shell",
-            "command": "\"${workspaceFolder}/bin/main\"",
+            "command": "${workspaceFolder}/bin/main.exe",
             "options": {
                 "cwd": "bin"
             },
             "problemMatcher": []
         },
         {
-            "label": "run tests on windows cmd shell ",
+            "label": "run tests on windows cmd shell",
             "type": "shell",
-            "command": "\"${workspaceFolder}/bin/testmain\"",
+            "command": "${workspaceFolder}/bin/testmain.exe",
             "options": {
                 "cwd": "bin"
             },

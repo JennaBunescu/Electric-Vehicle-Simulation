@@ -24,7 +24,7 @@ int main(){
 
     // Load car image (bird's eye view)
     sf::Texture carTexture;
-    if (!carTexture.loadFromFile("/Users/jennabunescu/Desktop/Project/Electric-Vehicle-Simulation/car1.png")) {
+    if (!carTexture.loadFromFile("car1.png")) {
         cout << "❌ Error loading car image" << endl;
         return -1;
     }
