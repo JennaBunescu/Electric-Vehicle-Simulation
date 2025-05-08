@@ -161,3 +161,11 @@ float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float delta
 
     return speed;
 }
+
+
+void Charger::stopCharging(Battery* battery) {
+    if (battery) {
+        battery->set_Q_current(0.0f); // TODO: Double check if this needs to be Q current set to 0 or current set to 0. If it is just "current" then we need a setCurrent function in the battery class
+    }
+    cout << "Charging stopped" << endl;
+}

@@ -85,7 +85,7 @@ public:
 class Charger{
 
     private:
-        
+        bool isCharging; //to track state
         float maxPowerOutput;
         float efficiency;
 
@@ -93,7 +93,7 @@ class Charger{
     public:
 
     void startCharging(Battery* battery);
-    void stopCharging();
+    void stopCharging(Battery* battery);
 };
 
 
