@@ -21,7 +21,12 @@ int main(){
     float wheelRadius = 0.3f;
     float maxSpeed = 30.0f;
     bool editingWheel = false, editingSpeed = false;
+    
+    // for user parameter input
     std::string inputBuffer = "";
+    std::string inputStr = "";
+    int inputStage = 0;  // 0 = mass, 1 = radius, etc.
+    float mass = 0.0f, radius = 0.0f, drag = 0.0f, area = 0.0f;
 
     // sf::Text wheelLabel("Wheel Radius:", font, 20);
     // sf::Text speedLabel("Max Speed:", font, 20);
@@ -120,36 +125,79 @@ int main(){
     while (window.isOpen()) {
         
         //write if statement if on from bool on inside vehicle.h to ask for paramaters of the car if false.
-        
-        if (!myEV.getOn()) {
+            if (!myEV.getOn()) {
+                sf::Text prompt, inputDisplay;
+                prompt.setFont(font);
+                inputDisplay.setFont(font);
+                prompt.setCharacterSize(32);
+                inputDisplay.setCharacterSize(28);
+                prompt.setFillColor(sf::Color::White);
+                inputDisplay.setFillColor(sf::Color::Yellow);
+                prompt.setPosition(100, 100);
+                inputDisplay.setPosition(100, 150);
             
+                // Define prompt text
+                std::string label;
+                switch (inputStage) {
+                    case 0: label = "Enter Mass (kg): "; break;
+                    case 1: label = "Enter Wheel Radius (m): "; break;
+                    case 2: label = "Enter Drag Coefficient: "; break;
+                    case 3: label = "Enter Frontal Area (m^2): "; break;
+                }
             
-            float mass, radius, drag, area;
-    
-            cout << "EV is off. Please enter the following parameters to start it:\n";
-            cout << "Mass (kg): ";
-            cin >> mass;
-    
-            cout << "Wheel Radius (m): ";
-            cin >> radius;
-    
-            cout << "Drag Coefficient: ";
-            cin >> drag;
-    
-            cout << "Frontal Area (m^2): ";
-            cin >> area;
-    
-            // Set parameters
-            myEV.setMass(mass);
-            myEV.setWheelRadius(radius);
-            myEV.setDragCoefficient(drag);
-            myEV.setFrontalArea(area);
-    
-            // Turn the EV on
-            // myEV.powerOn();
-        }
-
-
+                prompt.setString(label);
+                inputDisplay.setString(inputStr);
+            
+                window.draw(prompt);
+                window.draw(inputDisplay);
+                window.display();
+            
+                // Event loop just for text entry
+                sf::Event ev;
+                while (window.waitEvent(ev)) {
+                    if (ev.type == sf::Event::Closed) window.close();
+            
+                    if (ev.type == sf::Event::TextEntered) {
+                        if (ev.text.unicode == '\b') {
+                            if (!inputStr.empty()) inputStr.pop_back();  // Backspace
+                        } else if (ev.text.unicode == '\r' || ev.text.unicode == '\n') {
+                            try {
+                                float val = std::stof(inputStr);
+                                if (inputStage == 0) mass = val;
+                                else if (inputStage == 1) radius = val;
+                                else if (inputStage == 2) drag = val;
+                                else if (inputStage == 3) area = val;
+            
+                                inputStr.clear();
+                                inputStage++;
+                            } catch (...) {
+                                inputStr = "";  // Invalid input
+                            }
+                        } else if (ev.text.unicode < 128) {
+                            inputStr += static_cast<char>(ev.text.unicode);
+                        }
+            
+                        // Redraw UI
+                        window.clear();
+                        prompt.setString(label);
+                        inputDisplay.setString(inputStr);
+                        window.draw(prompt);
+                        window.draw(inputDisplay);
+                        window.display();
+                    }
+            
+                    if (inputStage >= 4) {  //once user successfully enters all parameters then turn on and run simulation
+                        myEV.setMass(mass);
+                        myEV.setWheelRadius(radius);
+                        myEV.setDragCoefficient(drag);
+                        myEV.setFrontalArea(area);
+                        myEV.powerOn();
+                        break;
+                    }
+                }
+            
+                continue;  // Skip rest of loop until EV is turned on
+            }
 
         sf::Event event;
         float deltaTime = deltaClock.restart().asSeconds();
@@ -184,6 +232,10 @@ int main(){
             cout << "Brake: " << input.get_brake() << endl; // Debug output
         } else {
             input.set_brake(0.0f);
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::P)) {
+            myEV.powerOff();
         }
         
         // Update speed based on input and battery state

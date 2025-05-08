@@ -19,9 +19,7 @@ class EV{
 
     public:
 
-        EV(){
-            this->on = false;
-        }
+        EV();
 
 
         // void accelerate(float throttle, float time);

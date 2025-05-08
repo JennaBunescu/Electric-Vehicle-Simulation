@@ -1,5 +1,9 @@
 #include "../headers/vehicle.h"
 
+EV::EV(){
+    this->on = false;
+}
+
 // void EV::accelerate(float throttle, float time) {
 
 // }
