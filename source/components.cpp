@@ -9,7 +9,7 @@ using namespace std;
 
 Battery::Battery() {
     Q_max = 150;               // Max capacity in Ah (for a 60 kWh battery at 420 V)
-    Q_current = 150;           // Starting fully charged
+    Q_now = 150;           // Starting fully charged
     V_max = 420;               // Max voltage (fully charged state)
     R_internal = 0.02;         // Internal resistance in ohms (typical for EVs)
     stateOfHealth = 100;       // New battery starts at full health

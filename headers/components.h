@@ -8,8 +8,8 @@ using namespace std;
 class Battery{ //If it receives a signal from the controller, the battery transmits DC electrical energy to the motor.
 //lithium ion battery
     private:
-        double Q_max;
-        double Q_current;
+        double Q_max; //Q stands for "Charge." This variable represents the max amount of charge 
+        double Q_now; 
         double V_max;
         double R_internal;
         double stateOfHealth;
