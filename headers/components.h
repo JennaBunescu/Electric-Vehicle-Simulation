@@ -16,6 +16,7 @@ class Battery{ //If it receives a signal from the controller, the battery transm
         double temperature;
         double voltage;
         double current;
+        bool isFull; 
 
     //let's say we need formulas for:
     // 1. connecting the car's motion with a battery discharge

@@ -3,20 +3,26 @@
 #include "../headers/driver_input.h"
 using namespace std;
 
-
-
 ///// Battery
 
-Battery::Battery() {
-    Q_max = 150;               // Max capacity in Ah (for a 60 kWh battery at 420 V)
-    Q_now = 150;               // Starting fully charged
+Battery::Battery(){
+    Q_max = 150;               // Max capacity in Ah (Ampere-hours)
+    Q_now = 150;               // Starting fully charged so Q_now = Q_max
     V_max = 420;               // Max voltage (fully charged state)
     R_internal = 0.02;         // Internal resistance in ohms (typical for EVs)
     stateOfHealth = 100;       // New battery starts at full health
-    temperature = 25;          // Room temperature in Celsius (adjust as needed)
-    voltage = 400;             // Nominal voltage (fully charged at 420 V)
-    current = 0;               // No current flow initially
+    
 };
+
+// //this constructor is meant for the admin console for the user to choose the parameters
+// Battery::Battery(float Q_max, float V_max, float R_internal){
+//     this->Q_max = Q_max;
+//     this->Q_now = Q_max;
+//     this->V_max = V_max;
+//     this->R_internal = R_internal;
+//     this->stateOfHealth = 100; // New battery starts at full health
+
+// };
 
 
 float Battery::get_SOC(){
@@ -26,6 +32,7 @@ float Battery::get_SOC(){
 
 //this function should be called repeatedly every fraction of a second
 //and it updates the battery charge incrementally.
+//does temperature affect discharge?
 void Battery::discharge(float speed, float delta_t){
     float deltaQ = 0.01 * speed * delta_t;
     Q_now -= deltaQ;
@@ -36,7 +43,7 @@ void Battery::discharge(float speed, float delta_t){
     }
 }
 
-void Battery::charge(float V_applied, float deltaTime, bool &fullCharge){
+void Battery::charge(float V_applied, float deltaTime){
     //the change in charge is the current applied (V_applied/R_internal) times the change in time (which will be every frame)
     float deltaQ = deltaTime*V_applied/R_internal; 
     if(Q_now < Q_max){
@@ -46,7 +53,7 @@ void Battery::charge(float V_applied, float deltaTime, bool &fullCharge){
         }
 
     } else { // this will be displayed on the car's screen, so we will probably need ofstream here to write this in the display file with "fout"
-        fullCharge = true;
+        isFull = true;
         return;
     }
 
@@ -73,9 +80,6 @@ void Battery::set_SOH(float SOH){
     stateOfHealth = SOH;
 }
 
-void Battery::set_temp(float T){
-    temperature = T;
-}
 
 //getters
 float Battery::get_Q_max(){
@@ -98,17 +102,7 @@ float Battery::get_SOH(){
     return stateOfHealth;
 }
 
-float Battery::get_temp(){
-    return temperature;
-}
-//regenerative - both when you brake and when you take foot off?
-//modeling the engine - design the engine's circuit, analyze the circuit
-//and use the formulas to find the motor actions
 
-//spring mass damper model, when you press down you exert a force, then there will be a transducer
-//and a variable resistor which would change the voltage sent to the control
-
-//put the parameters in a file of a route
 ////// Motor
 Motor::Motor(){
     maxSpeed = 100;
@@ -164,7 +158,7 @@ float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float delta
 
 void Charger::stopCharging(Battery* battery) {
     if (battery) {
-        battery->V_applied(0.0f); // TODO: Double check if this needs to be Q current set to 0 or current set to 0. If it is just "current" then we need a setCurrent function in the battery class
+// TODO: Double check if this needs to be Q current set to 0 or current set to 0. If it is just "current" then we need a setCurrent function in the battery class
     }
     cout << "Charging stopped" << endl;
 }

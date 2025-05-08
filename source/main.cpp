@@ -4,22 +4,47 @@
 #include <chrono>
 #include "../headers/components.h"
 #include "../headers/driver_input.h"
+#include "../headers/vehicle.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>  //for sf::Clock
 
 using namespace std;
 
 int main(){
+    
     //Use Clock to track times between frames. This will be used for deltaTime later on in the code.
     sf::Clock deltaClock;
+    //Get the resolution of the computer that the program is being run on
+    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+    //Create a window of the specified parameterstery battery
+    sf::RenderWindow window(desktop, "Electric Vehicle Simulation", sf::Style::Fullscreen);
+    float wheelRadius = 0.3f;
+    float maxSpeed = 30.0f;
+    bool editingWheel = false, editingSpeed = false;
+    std::string inputBuffer = "";
 
-    //This creates a window of the specified parameters
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Electric Vehicle Simulation");
+    // sf::Text wheelLabel("Wheel Radius:", font, 20);
+    // sf::Text speedLabel("Max Speed:", font, 20);
+    // sf::Text wheelValue(to_string(wheelRadius), font, 20);
+    // sf::Text speedValue(to_string(maxSpeed), font, 20);
 
-    //Initializing classes
-    Battery battery;
+    // sf::RectangleShape wheelBox(sf::Vector2f(120, 30));
+    // sf::RectangleShape speedBox(sf::Vector2f(120, 30));
+
+    // wheelLabel.setPosition(20, window.getSize().y - 100);
+    // wheelBox.setPosition(160, window.getSize().y - 100);
+    // wheelValue.setPosition(165, window.getSize().y - 98);
+
+    // speedLabel.setPosition(20, window.getSize().y - 60);
+    // speedBox.setPosition(160, window.getSize().y - 60);
+    // speedValue.setPosition(165, window.getSize().y - 58);
+
+    // wheelBox.setFillColor(sf::Color::White);
+    // speedBox.setFillColor(sf::Color::White);
+
     DriverInput input;
     Motor motor;
+    Battery battery;
     float vehicleSpeed = 0.0;
 
     // Load car image (bird's eye view)
@@ -90,7 +115,42 @@ int main(){
     // Main loop
     float roadYPosition = 0.0f;  // Starting position of the road texture
 
+    EV myEV;
+
     while (window.isOpen()) {
+        
+        //write if statement if on from bool on inside vehicle.h to ask for paramaters of the car if false.
+        
+        if (!myEV.getOn()) {
+            
+            
+            float mass, radius, drag, area;
+    
+            cout << "EV is off. Please enter the following parameters to start it:\n";
+            cout << "Mass (kg): ";
+            cin >> mass;
+    
+            cout << "Wheel Radius (m): ";
+            cin >> radius;
+    
+            cout << "Drag Coefficient: ";
+            cin >> drag;
+    
+            cout << "Frontal Area (m^2): ";
+            cin >> area;
+    
+            // Set parameters
+            myEV.setMass(mass);
+            myEV.setWheelRadius(radius);
+            myEV.setDragCoefficient(drag);
+            myEV.setFrontalArea(area);
+    
+            // Turn the EV on
+            // myEV.powerOn();
+        }
+
+
+
         sf::Event event;
         float deltaTime = deltaClock.restart().asSeconds();
 
@@ -98,6 +158,18 @@ int main(){
             if (event.type == sf::Event::Closed)
                 window.close();
         }
+
+
+        // Detect mouse click
+        if (event.type == sf::Event::MouseButtonPressed) {
+            if (event.mouseButton.button == sf::Mouse::Left) {
+                int x = event.mouseButton.x;
+                int y = event.mouseButton.y;
+                std::cout << "Mouse clicked at: " << x << ", " << y << std::endl;
+                
+            }
+        }
+
 
         // --- HANDLE DRIVER INPUT ---
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
@@ -113,7 +185,7 @@ int main(){
         } else {
             input.set_brake(0.0f);
         }
-
+        
         // Update speed based on input and battery state
         vehicleSpeed = motor.updateSpeed(input, battery, deltaTime);
         cout << "Current Speed: " << vehicleSpeed << endl; // Debug output

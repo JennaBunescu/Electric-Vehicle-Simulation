@@ -8,9 +8,7 @@ using namespace std;
 //in that way we can use the variable speed for all of them, and maybe other things too
 class EV{
     private:
-
-        float speed; //this is needed for both the battery and the motor
-
+        bool on;
         float mass;
         float wheelRadius;
         float dragCoefficient;
@@ -22,14 +20,22 @@ class EV{
     public:
 
         EV(){
-
+            this->on = false;
         }
 
 
-        void accelerate(float throttle, float time);
-        void brake(float force, float time);
-        float getRangeEstimate();
-        void updatePosition(float deltaTime);
-};
+        // void accelerate(float throttle, float time);
+        // void brake(float force, float time);
+        // float getRangeEstimate();
+        // void updatePosition(float deltaTime);
+
+        void powerOn();
+        void powerOff();
+        bool getOn() const;
+        void setMass(float m);
+        void setWheelRadius(float r);
+        void setDragCoefficient(float c);
+        void setFrontalArea(float a);
+    };
 
 #endif
