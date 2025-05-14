@@ -49,7 +49,6 @@ int main(){
 
     DriverInput input;
     Motor motor;
-    Battery battery;
     float vehicleSpeed = 0.0;
 
     // Load car image (bird's eye view)
@@ -123,95 +122,6 @@ int main(){
     EV myEV;
 
     while (window.isOpen()) {
-        
-        //write if statement if on from bool on inside vehicle.h to ask for paramaters of the car if false.
-            if (!myEV.getOn()) {
-                sf::Text prompt, inputDisplay;
-                prompt.setFont(font);
-                inputDisplay.setFont(font);
-                prompt.setCharacterSize(32);
-                inputDisplay.setCharacterSize(28);
-                prompt.setFillColor(sf::Color::White);
-                inputDisplay.setFillColor(sf::Color::Yellow);
-                prompt.setPosition(100, 100);
-                inputDisplay.setPosition(100, 150);
-            
-                // Define prompt text
-                string label;
-                
-                // Set label before drawing anything
-                switch (inputStage) {
-                    case 0: label = "Enter Mass (kg): "; break;
-                    case 1: label = "Enter Wheel Radius (m): "; break;
-                    case 2: label = "Enter Drag Coefficient: "; break;
-                    case 3: label = "Enter Frontal Area (m^2): "; break;
-                }
-
-                prompt.setString(label);
-                inputDisplay.setString(inputStr);
-
-                // Clear and draw updated content
-                window.clear();
-                window.draw(prompt);
-                window.draw(inputDisplay);
-                window.display();
-
-            
-                // Event loop just for text entry
-                sf::Event ev;
-                while (window.waitEvent(ev)) {
-                    if (ev.type == sf::Event::Closed) window.close();
-            
-                    if (ev.type == sf::Event::TextEntered) {
-                        if (ev.text.unicode == '\b') {
-                            if (!inputStr.empty()) inputStr.pop_back();  // Backspace
-                        } else if (ev.text.unicode == '\r' || ev.text.unicode == '\n') {
-                            try {
-                                float val = std::stof(inputStr);
-                                if (inputStage == 0) mass = val;
-                                else if (inputStage == 1) radius = val;
-                                else if (inputStage == 2) drag = val;
-                                else if (inputStage == 3) area = val;
-            
-                                inputStr.clear();
-                                inputStage++;
-                            } catch (...) {
-                                inputStr = "";  // Invalid input
-                            }
-                        } else if (ev.text.unicode < 128) {
-                            inputStr += static_cast<char>(ev.text.unicode);
-                        }
-            
-                        // Redraw UI
-                        window.clear();
-
-                        switch (inputStage) {
-                            case 0: label = "Enter Mass (kg): "; break;
-                            case 1: label = "Enter Wheel Radius (m): "; break;
-                            case 2: label = "Enter Drag Coefficient: "; break;
-                            case 3: label = "Enter Frontal Area (m^2): "; break;
-                        }
-
-                        prompt.setString(label);
-                        inputDisplay.setString(inputStr);
-                        window.draw(prompt);
-                        window.draw(inputDisplay);
-                        window.display();
-                    }
-            
-                    if (inputStage >= 4) {  //once user successfully enters all parameters then turn on and run simulation
-                        myEV.setMass(mass);
-                        myEV.setWheelRadius(radius);
-                        myEV.setDragCoefficient(drag);
-                        myEV.setFrontalArea(area);
-                        myEV.powerOn();
-                        break;
-                    }
-                }
-            
-                continue;  // Skip rest of loop until EV is turned on
-            }
-
         sf::Event event;
         float deltaTime = deltaClock.restart().asSeconds();
 
@@ -255,6 +165,8 @@ int main(){
         // Update speed based on input and battery state
         vehicleSpeed = motor.updateSpeed(input, battery, deltaTime);
         cout << "Current Speed: " << vehicleSpeed << endl; // Debug output
+
+        updateTemperature(deltaTime, ambientTemp);
 
         // Move the road upwards (simulate driving)
         roadYPosition += vehicleSpeed * deltaTime;  // Adjust road speed based on car speed
