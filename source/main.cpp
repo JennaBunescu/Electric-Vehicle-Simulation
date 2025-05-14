@@ -6,218 +6,184 @@
 #include "../headers/driver_input.h"
 #include "../headers/vehicle.h"
 #include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>  //for sf::Clock
+#include <SFML/System.hpp>  // For sf::Clock
 
 using namespace std;
 
-int main(){
-    
-    //Use Clock to track times between frames. This will be used for deltaTime later on in the code.
-    sf::Clock deltaClock;
-    //Get the resolution of the computer that the program is being run on
-    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-    //Create a window of the specified parameterstery battery
-    sf::RenderWindow window(desktop, "Electric Vehicle Simulation", sf::Style::Fullscreen);
-    float wheelRadius = 0.3f;
-    float maxSpeed = 30.0f;
-    bool editingWheel = false, editingSpeed = false;
-    
-    // for user parameter input
-    std::string inputBuffer = "";
-    std::string inputStr = "";
-    int inputStage = 0;  // 0 = mass, 1 = radius, etc.
-    float mass = 0.0f, radius = 0.0f, drag = 0.0f, area = 0.0f;
-
-    // sf::Text wheelLabel("Wheel Radius:", font, 20);
-    // sf::Text speedLabel("Max Speed:", font, 20);
-    // sf::Text wheelValue(to_string(wheelRadius), font, 20);
-    // sf::Text speedValue(to_string(maxSpeed), font, 20);
-
-    // sf::RectangleShape wheelBox(sf::Vector2f(120, 30));
-    // sf::RectangleShape speedBox(sf::Vector2f(120, 30));
-
-    // wheelLabel.setPosition(20, window.getSize().y - 100);
-    // wheelBox.setPosition(160, window.getSize().y - 100);
-    // wheelValue.setPosition(165, window.getSize().y - 98);
-
-    // speedLabel.setPosition(20, window.getSize().y - 60);
-    // speedBox.setPosition(160, window.getSize().y - 60);
-    // speedValue.setPosition(165, window.getSize().y - 58);
-
-    // wheelBox.setFillColor(sf::Color::White);
-    // speedBox.setFillColor(sf::Color::White);
-
-    DriverInput input;
-    Motor motor;
-    float vehicleSpeed = 0.0;
-
-    // Load car image (bird's eye view)
-    sf::Texture carTexture;
-    if (!carTexture.loadFromFile("./assets/car1.png")) {
-        cout << "❌ Error loading car image" << endl;
-        return -1;
-    }
-
-    sf::Sprite carSprite(carTexture);
-    carSprite.setScale(0.3f, 0.3f); // Make car smaller
-
-    // Load road images (road1, road2, road3)
-    sf::Texture roadTexture1, roadTexture2, roadTexture3;
-    if (!roadTexture1.loadFromFile("./assets/road1.png") || !roadTexture2.loadFromFile("./assets/road2.png") || !roadTexture3.loadFromFile("./assets/road3.png")) {
-        cout << "❌ Error loading road textures" << endl;
-        return -1;
-    }
-
-    sf::Sprite roadSprite1(roadTexture1);
-    sf::Sprite roadSprite2(roadTexture2);
-    sf::Sprite roadSprite3(roadTexture3);
-
-    // Scale road images to fit the window size
-    roadSprite1.setScale(float(window.getSize().x) / roadTexture1.getSize().x, float(window.getSize().y) / roadTexture1.getSize().y);
-    roadSprite2.setScale(float(window.getSize().x) / roadTexture2.getSize().x, float(window.getSize().y) / roadTexture2.getSize().y);
-    roadSprite3.setScale(float(window.getSize().x) / roadTexture3.getSize().x, float(window.getSize().y) / roadTexture3.getSize().y);
-
-    // Load battery image (make sure path is correct)
-    sf::Texture batteryTexture;
-    if (!batteryTexture.loadFromFile("./assets/battery1.png")) {
-        cout << "❌ Error loading battery texture from image. Check file path and format." << endl;
-        return -1;
-    } else {
-        cout << "✅ Battery image loaded successfully!" << endl;
-    }
-
-    sf::Sprite batterySprite(batteryTexture);
-    batterySprite.setColor(sf::Color(255, 255, 255));  // White for visibility
-    batterySprite.setScale(0.3f, 0.3f);  // Scale the battery sprite
-
-    // Load font for text
-    sf::Font font;
+// Function to initialize SFML assets like fonts, textures, and sprites
+bool loadAssets(sf::Font &font, sf::Texture &carTexture, sf::Texture &roadTexture1,
+                sf::Texture &roadTexture2, sf::Texture &roadTexture3, sf::Texture &batteryTexture) {
     if (!font.loadFromFile("./Roboto.ttf")) {
         cout << "❌ Error loading font" << endl;
-        return -1;
+        return false;
+    }
+    
+    if (!carTexture.loadFromFile("./assets/car1.png") || 
+        !roadTexture1.loadFromFile("./assets/road1.png") || 
+        !roadTexture2.loadFromFile("./assets/road2.png") || 
+        !roadTexture3.loadFromFile("./assets/road3.png") ||
+        !batteryTexture.loadFromFile("./assets/battery1.png")) {
+        cout << "❌ Error loading textures" << endl;
+        return false;
+    }
+    return true;
+}
+
+// Function to create and position UI elements
+void createUIElements(sf::Font &font, sf::Text &wheelLabel, sf::Text &speedLabel, sf::Text &wheelValue, 
+                      sf::Text &speedValue, sf::RectangleShape &wheelBox, sf::RectangleShape &speedBox) {
+    wheelLabel.setString("Wheel Radius:");
+    speedLabel.setString("Max Speed:");
+
+    wheelLabel.setFont(font);
+    speedLabel.setFont(font);
+    wheelValue.setFont(font);
+    speedValue.setFont(font);
+
+    wheelLabel.setCharacterSize(20);
+    speedLabel.setCharacterSize(20);
+    wheelValue.setCharacterSize(20);
+    speedValue.setCharacterSize(20);
+
+    wheelBox.setSize(sf::Vector2f(120, 30));
+    speedBox.setSize(sf::Vector2f(120, 30));
+
+    wheelLabel.setPosition(20, 500);  // Adjust position based on window size
+    speedLabel.setPosition(20, 550);  // Adjust position based on window size
+    wheelValue.setPosition(160, 500);
+    speedValue.setPosition(160, 550);
+
+    wheelBox.setFillColor(sf::Color::White);
+    speedBox.setFillColor(sf::Color::White);
+}
+
+// Main function
+int main() {
+    // Initialize window and clock
+    sf::Clock deltaClock;
+    sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+    sf::RenderWindow window(desktop, "Electric Vehicle Simulation", sf::Style::Fullscreen);
+    
+    // Load assets (font, textures, etc.)
+    sf::Font font;
+    sf::Texture carTexture, roadTexture1, roadTexture2, roadTexture3, batteryTexture;
+    if (!loadAssets(font, carTexture, roadTexture1, roadTexture2, roadTexture3, batteryTexture)) {
+        return -1;  // Exit if assets couldn't be loaded
     }
 
-    sf::Text text;
-    text.setFont(font);
-    text.setCharacterSize(24);
-    text.setFillColor(sf::Color::White);
+    // Create sprites
+    sf::Sprite carSprite(carTexture);
+    carSprite.setScale(0.3f, 0.3f);
 
-    // Create a background for the battery SOC display (box)
-    sf::RectangleShape batteryBox(sf::Vector2f(200, 100)); // Box for SOC, on the left
-    batteryBox.setFillColor(sf::Color(0, 0, 0, 150)); // Semi-transparent black
+    sf::Sprite roadSprite1(roadTexture1), roadSprite2(roadTexture2), roadSprite3(roadTexture3);
+    roadSprite1.setScale(float(window.getSize().x) / roadTexture1.getSize().x, 
+                         float(window.getSize().y) / roadTexture1.getSize().y);
+    roadSprite2.setScale(float(window.getSize().x) / roadTexture2.getSize().x, 
+                         float(window.getSize().y) / roadTexture2.getSize().y);
+    roadSprite3.setScale(float(window.getSize().x) / roadTexture3.getSize().x, 
+                         float(window.getSize().y) / roadTexture3.getSize().y);
 
-    // Create a background box for the speed display (box)
-    sf::RectangleShape speedBox(sf::Vector2f(200, 50)); // Box for speed display
-    speedBox.setFillColor(sf::Color(0, 0, 0, 150)); // Semi-transparent black
+    // Create battery sprite
+    sf::Sprite batterySprite(batteryTexture);
+    batterySprite.setScale(0.3f, 0.3f);
+    
+    // Initialize DriverInput, Motor, Battery
+    DriverInput input;
+    Motor motor;
+    Battery battery;
+    
+    float vehicleSpeed = 0, ambientTemp = 25, batteryTemp = 0;
 
-    // Create a text object for speed
-    sf::Text speedText;
-    speedText.setFont(font);
-    speedText.setCharacterSize(24);
-    speedText.setFillColor(sf::Color::White);
+    // Create and initialize UI elements
+    sf::Text wheelLabel, speedLabel, wheelValue, speedValue;
+    sf::RectangleShape wheelBox, speedBox;
+    createUIElements(font, wheelLabel, speedLabel, wheelValue, speedValue, wheelBox, speedBox);
 
     // Main loop
-    float roadYPosition = 0.0f;  // Starting position of the road texture
-
+    float roadYPosition = 0.0f;
     EV myEV;
 
     while (window.isOpen()) {
         sf::Event event;
         float deltaTime = deltaClock.restart().asSeconds();
 
+        // Handle window events
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
 
-        // Detect mouse click
-        if (event.type == sf::Event::MouseButtonPressed) {
-            if (event.mouseButton.button == sf::Mouse::Left) {
-                int x = event.mouseButton.x;
-                int y = event.mouseButton.y;
-                std::cout << "Mouse clicked at: " << x << ", " << y << std::endl;
-                
-            }
-        }
-
-        // --- HANDLE DRIVER INPUT ---
+        // Handle driver inputs
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
             input.set_throttle(1.0f);  // Full throttle
-            cout << "Throttle: " << input.get_throttle() << endl; // Debug output
         } else {
             input.set_throttle(0.0f);
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
             input.set_brake(1.0f);  // Full brake
-            cout << "Brake: " << input.get_brake() << endl; // Debug output
         } else {
             input.set_brake(0.0f);
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::P)) {
             myEV.powerOff();
-            inputStage = 0;  // resets the input stage for parameters 
-            inputStr.clear(); 
-            // TODO: Make it so that the Battery and Motor class reset their values. (Speed stays across simulations even though parameters are changed)
+            // Reset input parameters
         }
-        
-        // Update speed based on input and battery state
-        vehicleSpeed = motor.updateSpeed(input, battery, deltaTime);
-        cout << "Current Speed: " << vehicleSpeed << endl; // Debug output
 
-        updateTemperature(deltaTime, ambientTemp);
+        // Update vehicle speed and battery temperature
+        vehicleSpeed = motor.updateSpeed(input, battery, deltaTime);
+        batteryTemp = battery.updateTemperature(deltaTime, ambientTemp);
 
         // Move the road upwards (simulate driving)
-        roadYPosition += vehicleSpeed * deltaTime;  // Adjust road speed based on car speed
+        roadYPosition += vehicleSpeed * deltaTime;
         if (roadYPosition >= window.getSize().y) {
-            roadYPosition = 0;  // Reset road position to loop
+            roadYPosition = 0;
         }
 
-        // Set the position of the road textures (moving upwards)
+        // Set positions of road textures
         roadSprite1.setPosition(0, roadYPosition);
         roadSprite2.setPosition(0, roadYPosition - window.getSize().y);
         roadSprite3.setPosition(0, roadYPosition - 2 * window.getSize().y);
 
-        // Update battery bar scale based on SOC
+        // Update battery sprite scale based on SOC
         float socScale = battery.get_SOC() / 100.0f;
-        batterySprite.setScale(socScale * 0.3f, 0.3f);  // Scale width based on SOC and keep height constant
+        batterySprite.setScale(socScale * 0.3f, 0.3f);
 
-        // Center battery sprite in the black box
-        float spriteWidth = batterySprite.getGlobalBounds().width;
-        float spriteHeight = batterySprite.getGlobalBounds().height;
-        batterySprite.setPosition(20, window.getSize().y / 2 - spriteHeight / 2); // Position battery box on the left side
-
-        // Update text for SOC display
-        text.setString("Battery SOC: " + to_string(static_cast<int>(battery.get_SOC())) + "%");
-        text.setPosition(20, window.getSize().y / 2 + 30);  // Place text below the battery image
+        // Update SOC text
+        sf::Text socText;
+        socText.setFont(font);
+        socText.setString("Battery SOC: " + to_string(static_cast<int>(battery.get_SOC())) + "%");
+        socText.setCharacterSize(24);
+        socText.setFillColor(sf::Color::White);
+        socText.setPosition(20, window.getSize().y / 2 + 30);
 
         // Update speed text
+        sf::Text speedText;
+        speedText.setFont(font);
         speedText.setString("Speed: " + to_string(static_cast<int>(vehicleSpeed)) + " m/s");
-        speedText.setPosition(20, window.getSize().y / 2 - 50);  // Position it below the battery
+        speedText.setCharacterSize(24);
+        speedText.setFillColor(sf::Color::White);
+        speedText.setPosition(20, window.getSize().y / 2 - 50);
 
-        // Clear window with sky blue background
+        // Clear window and redraw
         window.clear(sf::Color(135, 206, 235)); // Sky blue background
-
-        // Draw the road
         window.draw(roadSprite1);
         window.draw(roadSprite2);
         window.draw(roadSprite3);
-
-        // Draw the car, move it to the right side of the window
-        carSprite.setPosition(window.getSize().x - carSprite.getGlobalBounds().width - 20, window.getSize().y / 2 - carSprite.getGlobalBounds().height / 2);
         window.draw(carSprite);
-
-        // Draw the battery box and the battery image with SOC text
-        window.draw(batteryBox);
         window.draw(batterySprite);
-        window.draw(text);
-
-        // Draw speed box and speed text
-        window.draw(speedBox);
+        window.draw(socText);
         window.draw(speedText);
 
-        // Display everything
+        // Draw UI elements (wheel radius and speed)
+        window.draw(wheelLabel);
+        window.draw(wheelBox);
+        window.draw(wheelValue);
+        window.draw(speedLabel);
+        window.draw(speedBox);
+        window.draw(speedValue);
+
         window.display();
 
         // Delay for smoother movement

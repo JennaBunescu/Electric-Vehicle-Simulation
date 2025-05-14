@@ -14,6 +14,9 @@ Battery::Battery(){
     temperature = 25;          // Room temperature in Celsius (adjust as needed)
     voltage = 400;             // Nominal voltage (fully charged at 420 V)
     current = 0;               // No current flow initially
+    heatCapacity = 500.0; // J/°C, thermal mass of battery
+    heatTransferCoeff = 0.05; // W/°C, to environment
+
 };
 
 
@@ -38,7 +41,7 @@ void Battery::discharge(float speed, float delta_t){
     }
 }
 
-void Battery::charge(float V_applied, float deltaTime){
+void Battery::charge(float V_applied, float deltaTime, bool &isFull){
     //the change in charge is the current applied (V_applied/R_internal) times the change in time (which will be every frame)
     float deltaQ = deltaTime*V_applied/R_internal; 
     current = deltaQ / deltaTime; //Update current. Current is positive for charging
@@ -55,6 +58,26 @@ void Battery::charge(float V_applied, float deltaTime){
     }
 
 }
+
+float Battery::updateTemperature(float delta_t, float ambientTemp) {
+
+    // Heat generated: Q = I^2 * R * t
+    float heatGenerated = current * current * R_internal * delta_t;
+
+    // Cooling: Q = h * (T_batt - T_ambient) * t
+    float cooling = heatTransferCoeff * (temperature - ambientTemp) * delta_t;
+
+    // Net heat change
+    float netHeat = heatGenerated - cooling;
+
+    // Temperature change = Q / C
+    float deltaTemp = netHeat / heatCapacity;
+
+    this->temperature += deltaTemp;
+
+    return temperature;
+}
+
 
 //setters
 void Battery::set_Q_max(float Q){
@@ -116,48 +139,52 @@ Motor::Motor(){
 }
 
 float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float deltaTime) {
-    static float angularSpeed = 0.0f;
+    static float angularSpeed = 0;
 
     float throttle = driverInput.get_throttle();
-    cout << "From motor class: throttle: " << driverInput.get_throttle() <<endl; 
     float brake = driverInput.get_brake();
 
-    //apply throttle torque
-    if (throttle > 0){
+    cout << "Throttle: " << throttle << " | Brake: " << brake << endl;
 
-        float torque = throttle * maxTorque;
-        float angularAcceleration = torque / inertia;
-        angularSpeed += angularAcceleration * deltaTime;
+    float netTorque = 0.0;
+
+    // Apply throttle torque
+    if (throttle > 0) {
+        float throttleTorque = throttle * maxTorque;
+        netTorque += throttleTorque;
     }
 
-    //apply braking torque
-    if (brake > 0){
-        float brakeTorque = brake * maxBrakeTorque;
-        float angularDeceleration = brakeTorque / inertia;
-        angularSpeed -= angularDeceleration * deltaTime;
+    // Apply braking torque
+    if (brake > 0) {
+        float brakingTorque = brake * maxBrakeTorque;
+        netTorque -= brakingTorque;
     }
 
-    //apply passive drag when neither throttle nor brake are applied
+    // Passive drag when neither throttle nor brake is pressed
     if (throttle == 0 && brake == 0) {
-        float dragTorque = 0.05f * maxTorque;
-        float angularDeceleration = dragTorque / inertia;
-        angularSpeed -= angularDeceleration * deltaTime;
-    }
-    //clamp angularSpeed to 0 to avoid going backward
-    if (angularSpeed < 0){
-        angularSpeed = 0;
-    cout << "Angular speed: " << angularSpeed << endl;
+        float dragTorque = 0.8 * maxTorque; // You can tune this value
+        netTorque -= dragTorque;
     }
 
-    //converting to linear speed, which depends on the wheel radius
+    // Calculate angular acceleration
+    float angularAcceleration = netTorque / inertia;
+    angularSpeed += angularAcceleration * deltaTime;
+
+    // Prevent negative angular speed (no reverse for now)
+    if (angularSpeed < 0.0f) {
+        angularSpeed = 0.0f;
+    }
+
+    // Convert to linear speed
     this->speed = wheelRadius * angularSpeed;
 
-    //limit speed to maxSpeed
-    if (this->speed > maxSpeed){
+    // Clamp to max speed
+    if (this->speed > maxSpeed) {
         this->speed = maxSpeed;
     }
 
-    battery.discharge(speed, deltaTime);  //each time the speed updates, update SOC
+    // Discharge battery based on current speed
+    battery.discharge(speed, deltaTime);
 
     return speed;
 }
@@ -165,7 +192,7 @@ float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float delta
 
 void Charger::stopCharging(Battery* battery) {
     if (battery) {
-        battery->V_applied(0.0f); // TODO: Double check if this needs to be Q current set to 0 or current set to 0. If it is just "current" then we need a setCurrent function in the battery class
+        //battery->V_applied(0.0f); // TODO: Double check if this needs to be Q current set to 0 or current set to 0. If it is just "current" then we need a setCurrent function in the battery class
     }
     cout << "Charging stopped" << endl;
 }

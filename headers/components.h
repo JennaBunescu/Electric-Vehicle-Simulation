@@ -16,6 +16,9 @@ class Battery{ //If it receives a signal from the controller, the battery transm
         double temperature;
         double voltage;
         double current;
+        double heatCapacity; // J/°C, thermal mass of battery
+        double heatTransferCoeff; // W/°C, to environment
+
 
     //let's say we need formulas for:
     // 1. connecting the car's motion with a battery discharge
@@ -55,7 +58,7 @@ class Battery{ //If it receives a signal from the controller, the battery transm
 
         void charge(float V_applied, float time, bool &fullCharge);
 
-        void updateTemperature(float delta_t, float ambientTemp)
+        float updateTemperature(float delta_t, float ambientTemp);
 
 
 };
