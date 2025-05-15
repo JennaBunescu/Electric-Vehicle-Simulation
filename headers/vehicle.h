@@ -19,6 +19,7 @@ class EV{
 
     public:
 
+        EV(Motor* motorPtr, Battery* batteryPtr);
         EV();
 
 
@@ -29,7 +30,7 @@ class EV{
 
         void powerOn();
         void powerOff();
-        bool getOn() const;
+        bool getOn();
         void setMass(float m);
         void setWheelRadius(float r);
         void setDragCoefficient(float c);

@@ -1,7 +1,12 @@
 #include "../headers/vehicle.h"
 
+EV::EV(Motor *motorPtr, Battery *batteryPtr)
+    : motor(motorPtr), battery(batteryPtr) {
+    // You can add setup code here if needed
+}
+
 EV::EV(){
-    this->on = false;
+    this->on = true;
 }
 
 // void EV::accelerate(float throttle, float time) {
@@ -24,7 +29,7 @@ EV::EV(){
 
 void EV::powerOn() { on = true; }
 void EV::powerOff() { on = false; }
-bool EV::getOn() const { return on; }
+bool EV::getOn() { return on; }
 
 void EV::setMass(float m) { mass = m; }
 void EV::setWheelRadius(float r) { wheelRadius = r; }

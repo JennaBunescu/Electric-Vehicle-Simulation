@@ -71,10 +71,10 @@ private:
     float maxCurrent;     // Max current the motor can draw (in Amps)
     float efficiency;     // Efficiency of the motor (between 0 and 1)
     float maxSpeed;       // Maximum motor speed (RPM)
-    const float maxTorque = 200.0f;      //200.0f
-    const float maxBrakeTorque = 300.0f; //300.0f
-    const float inertia = 10.0f;; //10.0f
-    const float wheelRadius = 0.3f;; //0.3f
+    float maxTorque = 200.0f;      //200.0f
+    float maxBrakeTorque = 300.0f; //300.0f
+    float inertia = 10.0f;; //10.0f
+    float wheelRadius = 0.3f;; //0.3f
 
 public:
     Motor();
