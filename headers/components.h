@@ -29,35 +29,36 @@ class Battery{
         Battery(float Q_max){
             this->Q_max = Q_max;
             this->Q_now = Q_max;
-                this->V_max = V_max;
-    this->R_internal = R_internal;
-    this->stateOfHealth = stateOfHealth; 
-    this->voltage = 0.9 * V_max; //nominal voltage is about 90% of the max voltage 
-    this->current = 0; 
-    this->heatCapacity = heatCapacity;
-    this->heatTransferCoeff = 0.6; 
-    this->temperature = 25; 
-    this->totalTimeSeconds = 0;     
-    this->totalDistanceKm = 0; 
+            this->V_max = V_max;
+            this->R_internal = R_internal;
+            this->stateOfHealth = stateOfHealth; 
+            this->voltage = 0.9 * V_max; //nominal voltage is about 90% of the max voltage 
+            this->current = 0; 
+            this->heatCapacity = heatCapacity;
+            this->heatTransferCoeff = 0.6; 
+            this->temperature = 25; 
+            this->totalTimeSeconds = 0;     
+            this->totalDistanceKm = 0; 
 
 
         }
-        Battery(float Q_max, float V_max, float R_internal, float heatCapacity, float stateOfHealth);
-        ~Battery() {}
-            // Copy constructor
+    Battery(float Q_max, float V_max, float R_internal, float heatCapacity, float stateOfHealth);
+    ~Battery(){}
+
+        //Copy constructor
     Battery(const Battery& other) : Q_max(other.Q_max) {
         Q_now = other.Q_max;
     }
 
-    // Assignment operator
+    //Assignment operator to set a class equal to another
     Battery& operator=(const Battery& other) {
         if (this != &other) {
             Q_max = other.Q_max;
             Q_now = other.Q_max;
-            // Copy other members
         }
         return *this;
     }
+
         void set_Q_max(float Q);
         void set_Q_current(float Q);
         void set_V_max(float V);

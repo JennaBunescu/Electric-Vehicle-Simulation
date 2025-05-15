@@ -74,10 +74,11 @@ void Battery::discharge(float speed, float delta_t){
     Q_now -= deltaQ; //Decrease the current charge level 
 
     //Current is negative when discharging (because the battery is supplying current to the motor)
-    current = -deltaQ / delta_t;
+    current += -deltaQ / delta_t;
 
     //Prevent battery from going below 0
-    if (Q_now < 0) {
+    if (Q_now < 0){
+        current = 0; //Battery cannot continue supplying current at 0
         Q_now = 0;
     }
 }
@@ -87,7 +88,7 @@ void Battery::discharge(float speed, float delta_t){
 void Battery::charge(float V_applied, float delta_t, bool &isFull){
     //The change in charge is the current applied (V_applied/R_internal) times the change in time (which will be every frame)
     float deltaQ = delta_t*V_applied/R_internal; 
-    current = deltaQ / delta_t; //Update current. Current is positive for charging as the battery is a receiver of current.
+    current += deltaQ / delta_t; //Update current. Current is positive for charging as the battery is a receiver of current.
 
     //Ensure that Q_now is capped at Q_max
     if(Q_now < Q_max){
@@ -97,6 +98,7 @@ void Battery::charge(float V_applied, float delta_t, bool &isFull){
         }
     } else{ //If battery is fully charged, don't change anything and just set isFull to true
         isFull = true;
+        current = 0; //Stop providing current
         return;
     }
 
@@ -113,7 +115,7 @@ float Battery::updateTemperature(float delta_t, float ambientTemp){
     //Q = h * (T_batt - T_ambient) * t
     float cooling = heatTransferCoeff * (temperature - ambientTemp) * delta_t;
 
-    //The net heaet change 
+    //The net heat change 
     float netHeat = heatGenerated - cooling;
 
     //Temperature change = Q / C
