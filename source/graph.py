@@ -16,8 +16,8 @@ plt.figure(figsize=(12, 6))
 
 # Speed Plot
 plt.subplot(2, 1, 1)
-plt.plot(outputData["Time"], outputData["Speed"], label="Speed in miliseconds", color="red")
-plt.ylabel("Speed in miliseconds")
+plt.plot(outputData["Time"], outputData["Speed"], label="Speed in meters/second", color="red")
+plt.ylabel("Speed in meters/second")
 plt.title("EV Speed and SOC Over Time")
 plt.grid(True)
 plt.legend()
