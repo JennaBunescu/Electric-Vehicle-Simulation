@@ -105,7 +105,7 @@ int main(){
     // Setup textbox background
     sf::RectangleShape textBox;
     textBox.setSize(sf::Vector2f(200, 40));
-    textBox.setPosition(100, 100);
+    textBox.setPosition(100, 500);
     textBox.setFillColor(sf::Color::White);
     textBox.setOutlineColor(sf::Color::Black);
     textBox.setOutlineThickness(2);
@@ -141,7 +141,7 @@ int main(){
     // Create sprites
     sf::Sprite carSprite(carTexture);
     carSprite.setScale(0.3f, 0.3f);
-    carSprite.setPosition(800, 350);  // Move car further to the right and higher (+X, +Y)
+    carSprite.setPosition(900, 200);  // Move car further to the right and higher (+X, +Y)
 
     sf::Sprite roadSprite1(roadTexture1), roadSprite2(roadTexture2), roadSprite3(roadTexture3);
     roadSprite1.setScale(float(window.getSize().x) / roadTexture1.getSize().x, 
@@ -151,14 +151,10 @@ int main(){
     roadSprite3.setScale(float(window.getSize().x) / roadTexture3.getSize().x, 
                          float(window.getSize().y) / roadTexture3.getSize().y);
 
-    // Create battery sprite
-    sf::Sprite batterySprite(batteryTexture);
-    batterySprite.setScale(0.3f, 0.3f);
-    batterySprite.setPosition(20, 380); // Place battery a little higher
 
     sf::Sprite uiBoxSprite;
     uiBoxSprite.setTexture(uiBoxTexture);
-    uiBoxSprite.setPosition(15, 490); // Adjust based on your layout
+    uiBoxSprite.setPosition(15, 200); // Adjust based on your layout
     uiBoxSprite.setScale(0.5f, 0.5f); // Optional: resize to fit
 
     // Initialize DriverInput, Motor, Battery
@@ -332,10 +328,10 @@ int main(){
         alertText.setPosition(100, 600); // Position near top center
 
 
-        if (battery.get_SOC() > 100) {
+        if (battery.get_SOC() >= 99) {
             alertText.setString("Battery Full!");
             window.draw(alertText);
-        } else if (battery.get_SOC() <= 10.0f) {
+        } else if (battery.get_SOC() <= 20) {
             alertText.setString("Battery Low!");
             window.draw(alertText);
         }
@@ -347,7 +343,7 @@ int main(){
         socText.setString("Battery SOC: " + to_string(static_cast<int>(battery.get_SOC())) + "%");
         socText.setCharacterSize(30);
         socText.setFillColor(sf::Color::Black);  // Set text color to black
-        socText.setPosition(50, 230); 
+        socText.setPosition(80, 400); 
 
         // Update speed text
         sf::Text speedText;
@@ -355,7 +351,7 @@ int main(){
         speedText.setString("Speed: " + to_string(static_cast<int>(vehicleSpeed)) + " m/s");
         speedText.setCharacterSize(30);
         speedText.setFillColor(sf::Color::Black);  // Set text color to black
-        speedText.setPosition(50, 500);  // Place text overlapping uiBoxSprite
+        speedText.setPosition(80, 450);  // Place text overlapping uiBoxSprite
 
                 // Update SOC text
         sf::Text wheelLabel;
@@ -363,7 +359,7 @@ int main(){
         wheelLabel.setString("Battery SOC: " + to_string(static_cast<int>(battery.get_SOC())) + "%");
         wheelLabel.setCharacterSize(30);
         wheelLabel.setFillColor(sf::Color::Black);  // Set text color to black
-        wheelLabel.setPosition(50, 130); 
+        wheelLabel.setPosition(80, 500); 
 
 
         // Update speed text
@@ -372,7 +368,7 @@ int main(){
         speedLabel.setString("Speed: " + to_string(static_cast<int>(vehicleSpeed)) + " m/s");
         speedLabel.setCharacterSize(30);
         speedLabel.setFillColor(sf::Color::Black);  // Set text color to black
-        speedLabel.setPosition(50, 180);  // Place text overlapping uiBoxSprite
+        speedLabel.setPosition(80, 550);  // Place text overlapping uiBoxSprite
 
         // Clear window and redraw
         window.clear(sf::Color(135, 206, 235)); // Sky blue background
@@ -381,10 +377,8 @@ int main(){
         window.draw(roadSprite2);
         window.draw(roadSprite3);
         window.draw(carSprite);
-        window.draw(batterySprite);
         window.draw(socText);
         window.draw(speedText);
-        window.draw(alertText);
         
 
         // Draw UI elements (wheel radius and speed)
