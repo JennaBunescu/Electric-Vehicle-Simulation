@@ -11,6 +11,12 @@ EV::EV(){
     this->on = true;
 }
 
+
+EV::EV(float wheelRadius){
+    this->wheelRadius = wheelRadius;
+    this->on = true;
+}
+
 float EV::get_wheelRadius(){
     return wheelRadius;
 }

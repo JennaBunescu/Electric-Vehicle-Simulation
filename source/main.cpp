@@ -139,7 +139,7 @@ int main(){
 
 
     sf::RectangleShape button(sf::Vector2f(150, 60));
-    button.setPosition(125.f, 70.f);
+    button.setPosition(50.f, 50.f);
     button.setFillColor(sf::Color(100, 100, 250));
 
     sf::Text buttonText;
@@ -199,11 +199,34 @@ int main(){
             // Only toggle if click is inside button bounds
             if (button.getGlobalBounds().contains(mousePosF)) {
                 evOn = !evOn;
+                
 
                 if (evOn) {
                     buttonText.setString("EV ON");
                     button.setFillColor(sf::Color(100, 100, 250));
                 } else {
+                    float newBatteryCapacity, newMaxTorque, newWheelRadius;
+
+                    cout << "🔧 Enter new battery capacity (Ah): ";
+                    cin >> newBatteryCapacity;
+
+                    cout << "🔧 Enter new motor max torque (Nm): ";
+                    cin >> newMaxTorque;
+
+                    cout << "🔧 Enter new wheel radius (m): ";
+                    cin >> newWheelRadius;
+
+                    // Create new motor and battery based on user input
+                    Motor newMotor(newMaxTorque);          // assuming you have a constructor like Motor(float maxTorque)
+                    Battery newBattery(newBatteryCapacity); // assuming constructor like Battery(float capacity)
+                    EV newEV(newWheelRadius);              // assuming constructor like EV(float wheelRadius)
+
+                    // Replace old components with new ones
+                    motor = newMotor;
+                    battery = newBattery;
+                    myEV = newEV;
+
+                    cout << "✅ EV components updated!\n\n";
                     buttonText.setString("EV OFF");
                     button.setFillColor(sf::Color(200, 50, 50));
                 }
@@ -270,13 +293,12 @@ int main(){
         alertText.setStyle(sf::Text::Bold);
         alertText.setPosition(100, 600); // Position near top center
 
-        float soc = battery.get_SOC();  // Already used in your SOC bar
 
-        if (soc > 90) {
-            alertText.setString("⚠️ Battery Full!");
+        if (battery.get_SOC() > 100) {
+            alertText.setString("Battery Full!");
             window.draw(alertText);
-        } else if (soc <= 10.0f) {
-            alertText.setString("⚠️ Battery Low!");
+        } else if (battery.get_SOC() <= 10.0f) {
+            alertText.setString("Battery Low!");
             window.draw(alertText);
         }
 
@@ -287,7 +309,7 @@ int main(){
         socText.setString("Battery SOC: " + to_string(static_cast<int>(battery.get_SOC())) + "%");
         socText.setCharacterSize(30);
         socText.setFillColor(sf::Color::Black);  // Set text color to black
-        socText.setPosition(50, 1000); 
+        socText.setPosition(50, 230); 
 
         // Update speed text
         sf::Text speedText;
@@ -303,7 +325,7 @@ int main(){
         wheelLabel.setString("Battery SOC: " + to_string(static_cast<int>(battery.get_SOC())) + "%");
         wheelLabel.setCharacterSize(30);
         wheelLabel.setFillColor(sf::Color::Black);  // Set text color to black
-        wheelLabel.setPosition(50, 100); 
+        wheelLabel.setPosition(50, 130); 
 
 
         // Update speed text
@@ -312,7 +334,7 @@ int main(){
         speedLabel.setString("Speed: " + to_string(static_cast<int>(vehicleSpeed)) + " m/s");
         speedLabel.setCharacterSize(30);
         speedLabel.setFillColor(sf::Color::Black);  // Set text color to black
-        speedLabel.setPosition(50, 200);  // Place text overlapping uiBoxSprite
+        speedLabel.setPosition(50, 180);  // Place text overlapping uiBoxSprite
 
         // Clear window and redraw
         window.clear(sf::Color(135, 206, 235)); // Sky blue background
@@ -339,10 +361,13 @@ int main(){
 
         window.draw(button);
         window.draw(buttonText);
+        
+        mouseWasPressed = mousePressed;
         window.display();
 
         // Delay for smoother movement
         std::this_thread::sleep_for(std::chrono::milliseconds(16));  // ~60 FPS
+
     }
 
     logFile.close();

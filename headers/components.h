@@ -26,6 +26,22 @@ class Battery{
     public:
         
         Battery();
+        Battery(float Q_max){
+            this->Q_max = Q_max;
+            this->Q_now = Q_max;
+                this->V_max = V_max;
+    this->R_internal = R_internal;
+    this->stateOfHealth = stateOfHealth; 
+    this->voltage = 0.9 * V_max; //nominal voltage is about 90% of the max voltage 
+    this->current = 0; 
+    this->heatCapacity = heatCapacity;
+    this->heatTransferCoeff = 0.6; 
+    this->temperature = 25; 
+    this->totalTimeSeconds = 0;     
+    this->totalDistanceKm = 0; 
+
+
+        }
         Battery(float Q_max, float V_max, float R_internal, float heatCapacity, float stateOfHealth);
         virtual ~Battery() {}
         void set_Q_max(float Q);
@@ -83,7 +99,9 @@ public:
     Motor();
 
     Motor(float maxTorque, float maxBrakeTorque, float inertia, float regenEfficiency);
-
+    Motor(float maxTorque){
+        this->maxTorque = maxTorque;
+    }
     bool isRegenerating(DriverInput& input);
 
     void setMaxRegenPower(float power);

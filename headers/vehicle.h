@@ -22,6 +22,7 @@ class EV{
 
         EV(Motor* motorPtr, Battery* batteryPtr);
         EV();
+        EV::EV(float wheelRadius);
 
         EV(Battery* batt) : battery(batt) {}
         ~EV() { delete battery; }

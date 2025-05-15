@@ -58,7 +58,7 @@ void Battery::setCurrent(float I) {
 //@param speed - the current speed of the car, delta_t - the change in time (which would be the interval between each frame)
 void Battery::discharge(float speed, float delta_t){
     //The discharge rate coefficient
-    float baseDischargeRate = 0.01;
+    float baseDischargeRate = 10; //0.01
 
     //Temperature factor adjustment
     float tempFactor = 1.0; //Base factor at reasonable temperatures 
