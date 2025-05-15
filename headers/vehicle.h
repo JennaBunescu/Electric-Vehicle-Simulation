@@ -5,8 +5,6 @@
 #include <iostream>
 using namespace std;
 
-// // Forward declarations to avoid circular dependency between components and vehicle
-
 class EV{
     private:
         bool on;
@@ -16,34 +14,16 @@ class EV{
         Battery* battery;
         Motor* motor;
         bool obstacle;
-        float wheelRadius = 0.3f; //Radius of the vehicle's wheels (meters)
+        float wheelRadius = 0.3; //Radius of the vehicle's wheels (meters)
 
     public:
         EV();
         EV(float wheelRadius);
 
-        void update(float speed, float delta_t) {
-            battery->discharge(speed, delta_t);
-        }
-                    // Copy constructor
-    EV(const EV& other) : wheelRadius(other.wheelRadius) {
-        // Copy other members
-    }
+        void update(float speed, float delta_t);
+        EV(const EV& other);
 
-    // Assignment operator
-    EV& operator=(const EV& other) {
-        if (this != &other) {
-        wheelRadius = other.wheelRadius;
-            // Copy other members
-        }
-        return *this;
-    }
-
-
-        // void accelerate(float throttle, float time);
-        // void brake(float force, float time);
-        // float getRangeEstimate();
-        // void updatePosition(float deltaTime);
+        EV& operator=(const EV& other);
         float get_wheelRadius();
 
         void powerOn();

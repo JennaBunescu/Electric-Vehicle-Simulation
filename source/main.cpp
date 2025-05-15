@@ -21,6 +21,40 @@
 
 using namespace std;
 
+#include <iostream>
+#include <limits>  // for std::numeric_limits
+using namespace std;
+
+//@brief function to ensure valid, non-negative, real number input. Only -1 is allowed as a default choice,
+//@param prompt - the message asking for input
+//@return the valid value
+float getValidatedInput(string prompt){
+    float value;
+    //Loop until valid input is received
+    while (true){
+        cout << prompt;
+        cin >> value;
+        //Use cin.fail() as the input variable is a float, so if user enters anything but a float (like a character), then the cin will fail to assign to the variable
+        if (cin.fail() || value <= 0){ //Also make sure the input is non-negative
+            if(value == -1){ //Allow user to input -1 as a choice of default settings
+                cin.ignore(1000000, '\n'); //Clear out junk
+                return value; 
+            }
+            //Clear the error state and ignore invalid input
+            cin.clear();
+            //Ignore a million characters in the input buffer until '\n'
+            cin.ignore(1000000, '\n');
+            cout << "Invalid input. Please enter a non-negative number.\n";
+        } else {
+            cin.ignore(1000000, '\n'); //Clear out junk
+            return value;
+        }
+    }
+}
+
+
+//@brief gets the average speed over a sample
+//@param sampleCount - number of data points to use
 void averageSpeed(int sampleCount){
     float* speeds = new float[sampleCount];
 
@@ -63,22 +97,19 @@ void averageSpeed(int sampleCount){
     return;
 }
 
-bool isMouseOver(const sf::RectangleShape &button, const sf::Vector2f &mousePos){
-    return button.getGlobalBounds().contains(mousePos);
-}
 
-// Helper function to create a button
+//Helper function to create a button on the display
 void setupButton(sf::RectangleShape &button, sf::Vector2f size, sf::Vector2f position, sf::Color color){
     button.setSize(size);
     button.setPosition(position);
     button.setFillColor(color);
 }
 
-// Function to initialize SFML assets like fonts, textures, and sprites
+//Function to initialize assets (fonts, textures, and sprites)
 bool loadAssets(sf::Font &font, sf::Texture &carTexture, sf::Texture &roadTexture1,
-                sf::Texture &roadTexture2, sf::Texture &roadTexture3, sf::Texture &batteryTexture, sf::Texture &uiBoxTexture) {
-    if (!font.loadFromFile("./assets/Roboto.ttf")) {
-        cout << "❌ Error loading font" << endl;
+    sf::Texture &roadTexture2, sf::Texture &roadTexture3, sf::Texture &uiBoxTexture){
+    if (!font.loadFromFile("./assets/Roboto.ttf")){ //check for success
+        cout << "Error loading font" << endl;
         return false;
     }
     
@@ -86,97 +117,40 @@ bool loadAssets(sf::Font &font, sf::Texture &carTexture, sf::Texture &roadTextur
         !roadTexture1.loadFromFile("./assets/road1.png") || 
         !roadTexture2.loadFromFile("./assets/road2.png") || 
         !roadTexture3.loadFromFile("./assets/road3.png") ||
-        !uiBoxTexture.loadFromFile("./assets/display.png") ||
-        !batteryTexture.loadFromFile("./assets/battery1.png")) {
-        cout << "❌ Error loading textures" << endl;
+        !uiBoxTexture.loadFromFile("./assets/display.png")){ //check for success
+        cout << "Error loading textures" << endl;
         return false;
     }
     return true;
 }
 
-// Main function
 int main(){
-    // Initialize window and clock
+    //Initialize clock (for tracking time)
     sf::Clock deltaClock;
-    // Initialize window in normal mode (not fullscreen)
-    sf::RenderWindow window(sf::VideoMode(1280, 720), "Electric Vehicle Simulation");  // Example size (1280x720)
+    //Initialize window in 1280x720 mode
+    sf::RenderWindow window(sf::VideoMode(1280, 720), "Electric Vehicle Simulation");
 
-    // Load assets (font, textures, etc.)
     sf::Font font;
-    sf::Texture carTexture, roadTexture1, roadTexture2, roadTexture3, batteryTexture, uiBoxTexture;
-    if (!loadAssets(font, carTexture, roadTexture1, roadTexture2, roadTexture3, batteryTexture, uiBoxTexture)) {
-        return -1;  // Exit if assets couldn't be loaded
-    }
-    // Setup textbox background
-    sf::RectangleShape textBox;
-    textBox.setSize(sf::Vector2f(200, 40));
-    textBox.setPosition(100, 500);
-    textBox.setFillColor(sf::Color::White);
-    textBox.setOutlineColor(sf::Color::Black);
-    textBox.setOutlineThickness(2);
+    sf::Texture carTexture, roadTexture1, roadTexture2, roadTexture3, uiBoxTexture;
+    loadAssets(font, carTexture, roadTexture1, roadTexture2, roadTexture3, uiBoxTexture);
 
-    // Setup text
-    sf::Text inputText;
-    inputText.setFont(font);
-    inputText.setCharacterSize(24);
-    inputText.setFillColor(sf::Color::Black);
-    inputText.setPosition(105, 105);
-
-
-    // Input state
-    std::string currentInput;
-    bool isFocused = false;
-
-
-    sf::RectangleShape inputBox(sf::Vector2f(400, 50));
-    inputBox.setFillColor(sf::Color::White);
-    inputBox.setOutlineColor(sf::Color::Black);
-    inputBox.setOutlineThickness(2);
-    inputBox.setPosition(100, 75);
-
-    inputText.setFont(font);
-    inputText.setFillColor(sf::Color::Black);
-    inputText.setCharacterSize(24);
-    inputText.setPosition(110, 80);
-
-    std::string userInput;
-
-
-
-    // Create sprites
+    //Create sprites - this could be further functionalized, but this is more convenient for now due to the textures that were loaded above
     sf::Sprite carSprite(carTexture);
     carSprite.setScale(0.3f, 0.3f);
-    carSprite.setPosition(900, 200);  // Move car further to the right and higher (+X, +Y)
+    carSprite.setPosition(900, 200);
 
     sf::Sprite roadSprite1(roadTexture1), roadSprite2(roadTexture2), roadSprite3(roadTexture3);
-    roadSprite1.setScale(float(window.getSize().x) / roadTexture1.getSize().x, 
-                         float(window.getSize().y) / roadTexture1.getSize().y);
-    roadSprite2.setScale(float(window.getSize().x) / roadTexture2.getSize().x, 
-                         float(window.getSize().y) / roadTexture2.getSize().y);
-    roadSprite3.setScale(float(window.getSize().x) / roadTexture3.getSize().x, 
-                         float(window.getSize().y) / roadTexture3.getSize().y);
+    roadSprite1.setScale(float(window.getSize().x) / roadTexture1.getSize().x, float(window.getSize().y) / roadTexture1.getSize().y); //using the window size to fit the road 
+    roadSprite2.setScale(float(window.getSize().x) / roadTexture2.getSize().x, float(window.getSize().y) / roadTexture2.getSize().y); //I need three road sprites to simulate GIF (movement)
+    roadSprite3.setScale(float(window.getSize().x) / roadTexture3.getSize().x, float(window.getSize().y) / roadTexture3.getSize().y);
 
-
+    //The blue box for the display information
     sf::Sprite uiBoxSprite;
     uiBoxSprite.setTexture(uiBoxTexture);
-    uiBoxSprite.setPosition(15, 200); // Adjust based on your layout
-    uiBoxSprite.setScale(0.5f, 0.5f); // Optional: resize to fit
+    uiBoxSprite.setPosition(15, 200);
+    uiBoxSprite.setScale(0.5f, 0.5f);
 
-    // Initialize DriverInput, Motor, Battery
-    DriverInput input;
-    Motor motor;
-    Battery battery;
-    
-    float vehicleSpeed = 0, ambientTemp = 25, batteryTemp = 0;
-
-    // Create and initialize UI elements
-    sf::Text wheelLabel, speedLabel, wheelValue, speedValue;
-    sf::RectangleShape wheelBox, speedBox;
-    // Main loop
-    float roadYPosition = 0.0f;
-    EV myEV;
-
-
+    //EV ON/OFF button initialization
     sf::RectangleShape button(sf::Vector2f(150, 60));
     button.setPosition(50.f, 50.f);
     button.setFillColor(sf::Color(100, 100, 250));
@@ -187,29 +161,37 @@ int main(){
     buttonText.setCharacterSize(30);
     buttonText.setFillColor(sf::Color::White);
     sf::FloatRect textRect = buttonText.getLocalBounds();
-    buttonText.setOrigin(textRect.left + textRect.width / 2.0f,
-                         textRect.top + textRect.height / 2.0f);
-    buttonText.setPosition(
-        button.getPosition().x + button.getSize().x / 2.0f,
-        button.getPosition().y + button.getSize().y / 2.0f);
+    buttonText.setOrigin(textRect.left + textRect.width / 2.0, textRect.top + textRect.height / 2.0);
+    buttonText.setPosition(button.getPosition().x + button.getSize().x / 2.0, button.getPosition().y + button.getSize().y / 2.0);
 
-
-
+    //track if the EV is on or off. Initialize at true as the first run is the default
     bool evOn = true;
 
-        // Track mouse button previous state
+    //Track mouse button previous state (this is to make sure the EV ON/OFF button does not react to mouse holds)
     bool mouseWasPressed = false;
 
-    
-    std::ofstream logFile("output.csv");
+    //Initialize classes + variables
+    DriverInput input;
+    Motor motor;
+    Battery battery;
+    EV myEV;
+    Charger charger;
+    float vehicleSpeed = 0, ambientTemp = 25, batteryTemp = 0;
+
+    float roadYPosition = 0.0; //Default Y position of the road
+
+    //Load csv file for info output
+    ofstream logFile("output.csv");
     logFile << "Time,Speed,SOC,BatteryTemp,Throttle,Brake\n";
-    float totalTime = 0.0f;  // to track time for the loop of updates
 
-    while (window.isOpen()) {
-        sf::Event event;
-        float deltaTime = deltaClock.restart().asSeconds();
+    float totalTime = 0.0;  //To track time for the loop of updates
 
-        //logging battery state to csv
+    //Run window loop (open screen)
+    while (window.isOpen()){
+        sf::Event event; //create event
+        float deltaTime = deltaClock.restart().asSeconds(); //use delta time as the interval between each frame
+
+        //For logging battery state to csv
         totalTime += deltaTime;
         logFile << totalTime << "," 
         << vehicleSpeed << "," 
@@ -218,150 +200,153 @@ int main(){
         << input.get_throttle() << "," 
         << input.get_brake() << "\n";
 
-
-        // Handle window events
+        //handle window events
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
 
-
-        // Get current mouse left button state
+        //Get current mouse left button state
         bool mousePressed = sf::Mouse::isButtonPressed(sf::Mouse::Left);
         sf::Vector2i mousePosI = sf::Mouse::getPosition(window);
         sf::Vector2f mousePosF(static_cast<float>(mousePosI.x), static_cast<float>(mousePosI.y));
 
 
 
-        // Check for mouse press edge (pressed now, but was not pressed before)
-        if (mousePressed && !mouseWasPressed) {
-            // Only toggle if click is inside button bounds
-            if (button.getGlobalBounds().contains(mousePosF)) {
-                evOn = !evOn;
-                
-
-                if (evOn) {
-                    buttonText.setString("EV ON");
+        //Check for mouse press (pressed now, but was not pressed before)
+        if (mousePressed && !mouseWasPressed){
+            //Only toggle if click is inside button bounds
+            if (button.getGlobalBounds().contains(mousePosF)){
+                evOn = !evOn; //change evOn state
+    
+                if (evOn){ //if the EV is on, just set the text to on
+                    buttonText.setString("EV ON"); //change to ON
                     button.setFillColor(sf::Color(100, 100, 250));
-                } else {
-                    float newBatteryCapacity, newMaxTorque, newWheelRadius;
+                } else{ 
+                    buttonText.setString("EV OFF"); //change to off
+                    button.setFillColor(sf::Color(200, 50, 50));
 
-                    cout << "🔧 Enter new battery capacity (Ah): ";
-                    cin >> newBatteryCapacity;
+                    //Ask for input into the terminal if the EV is off, to start new battery
+                    cout << "Enter '-1' if you want to set any elements to their default value." << endl;
+                    float newBatteryCapacity = getValidatedInput("Enter new battery capacity (Ah): ");
+                    float newBatteryVMAX = getValidatedInput("Enter new battery max voltage (V): ");
+                    float newBatteryRinternal = getValidatedInput("Enter new battery internal resistance (Ohm): ");
+                    float newBatteryHeatCap = getValidatedInput("Enter new battery heat capacity (J/K): ");
+                    float newMaxTorque = getValidatedInput("Enter new motor max torque (Nm): ");
+                    float newMaxSpeed = getValidatedInput("Enter new motor max speed (rad/s): ");
+                    float newWheelRadius = getValidatedInput("Enter new wheel radius (m): ");
 
-                    cout << "🔧 Enter new motor max torque (Nm): ";
-                    cin >> newMaxTorque;
+                    //Create new motor, vehicle, and battery based on user input
+                    Motor newMotor(newMaxTorque, newMaxSpeed);
+                    Battery newBattery(newBatteryCapacity, newBatteryVMAX, newBatteryRinternal, newBatteryHeatCap);
+                    EV newEV(newWheelRadius);
 
-                    cout << "🔧 Enter new wheel radius (m): ";
-                    cin >> newWheelRadius;
-
-                    // Create new motor and battery based on user input
-                    Motor newMotor(newMaxTorque);          // assuming you have a constructor like Motor(float maxTorque)
-                    Battery newBattery(newBatteryCapacity); // assuming constructor like Battery(float capacity)
-                    EV newEV(newWheelRadius);              // assuming constructor like EV(float wheelRadius)
-
-                    // Replace old components with new ones
+                    //Replace old components with new ones
                     motor = newMotor;
                     battery = newBattery;
                     myEV = newEV;
 
-                    cout << "✅ EV components updated!\n\n";
-                    buttonText.setString("EV OFF");
-                    button.setFillColor(sf::Color(200, 50, 50));
+                    cout << "EV components updated!\n\n";
                 }
-                // Re-center text after string update
+
+                //Re-center the EV ON/OFF text after string update (as EV OFF has one extra character)
                 sf::FloatRect textRect = buttonText.getLocalBounds();
-                buttonText.setOrigin(textRect.left + textRect.width / 2.0f,
-                                     textRect.top + textRect.height / 2.0f);
-                buttonText.setPosition(
-                    button.getPosition().x + button.getSize().x / 2.0f,
-                    button.getPosition().y + button.getSize().y / 2.0f);
+                buttonText.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+                buttonText.setPosition(button.getPosition().x + button.getSize().x / 2.0f, button.getPosition().y + button.getSize().y / 2.0f);
             }
         }
         if (evOn){
-
             window.clear(sf::Color(200, 200, 200));
         }
         else{
             window.clear(sf::Color::Black);
         }
 
+        //Battery status alert 
+        sf::Text chargingAlert;
+        chargingAlert.setFont(font);
+        chargingAlert.setString("Charging!");
+        chargingAlert.setCharacterSize(50);
+        chargingAlert.setFillColor(sf::Color::Green);
+        chargingAlert.setStyle(sf::Text::Bold);
+        chargingAlert.setPosition(80, 350);
 
-
-        // Handle driver inputs
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-            input.set_throttle(1.0f);  // Full throttle
+        //Handle driver inputs 
+        //Check if W is pressed
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
+            input.set_throttle(1.0);  //W represents full throttle
         } else {
-            input.set_throttle(0.0f);
+            input.set_throttle(0.0); //If W is not pressed, throttle is 0
         }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-            input.set_brake(1.0f);  // Full brake
+        //Check if S is pressed - braking
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)){
+            input.set_brake(1.0);  //Full brake
         } else {
-            input.set_brake(0.0f);
+            input.set_brake(0.0);
+        }
+        //Check if "C" is pressed - this is to charge the battery
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)){
+            motor.set_speed(0);
+            charger.startCharging(battery, deltaTime);
+            if (charger.get_charging_state() == true){
+                window.draw(chargingAlert);
+            }
+            
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::P)) {
-            myEV.powerOff();
-            break;
-            // Reset input parameters
-        }
-
-        // Update vehicle speed and battery temperature
+        //Update vehicle speed and battery temperature
         vehicleSpeed = motor.updateSpeed(input, myEV ,battery, deltaTime);
         batteryTemp = battery.updateTemperature(deltaTime, ambientTemp);
 
-
-
-        // Move the road upwards (simulate driving)
+        //Move the road upwards based on the speed(to simulate driving)
         roadYPosition += vehicleSpeed * deltaTime * 5;
-        if (roadYPosition >= window.getSize().y) {
+        if (roadYPosition >= window.getSize().y){
             roadYPosition = 0;
         }
 
-        // Set positions of road textures
+        //Set positions of road textures based on changed Y position
         roadSprite1.setPosition(0, roadYPosition);
         roadSprite2.setPosition(0, roadYPosition - window.getSize().y);
         roadSprite3.setPosition(0, roadYPosition - 2 * window.getSize().y);
 
-        // Battery status alert
+        //Battery status alert 
         sf::Text alertText;
         alertText.setFont(font);
         alertText.setCharacterSize(50);
         alertText.setFillColor(sf::Color::Red);
         alertText.setStyle(sf::Text::Bold);
-        alertText.setPosition(100, 800); // Position near top center
+        alertText.setPosition(80, 300);
 
-
-        // Update SOC text
+        //Update SOC text
         sf::Text socText;
         socText.setFont(font);
         socText.setString("Battery SOC: " + to_string(static_cast<int>(battery.get_SOC())) + "%");
         socText.setCharacterSize(30);
-        socText.setFillColor(sf::Color::Black);  // Set text color to black
+        socText.setFillColor(sf::Color::Black); 
         socText.setPosition(80, 400); 
 
-        // Update speed text
+        //Speed
         sf::Text speedText;
         speedText.setFont(font);
         speedText.setString("Speed: " + to_string(static_cast<int>(vehicleSpeed)) + " m/s");
         speedText.setCharacterSize(30);
-        speedText.setFillColor(sf::Color::Black);  // Set text color to black
-        speedText.setPosition(80, 450);  // Place text overlapping uiBoxSprite
+        speedText.setFillColor(sf::Color::Black);
+        speedText.setPosition(80, 450);
 
-        // Update SOC text
+        //Battery Temperature
         sf::Text tempText;
         tempText.setFont(font);
-        tempText.setString("Battery Temperature: " + to_string(static_cast<int>(battery.get_temp())) + "C");
+        //State the battery temperature, and convert it to an int from float, using static cast
+        tempText.setString("Battery Temperature: " + to_string(static_cast<int>(battery.get_temp())) + " C");
         tempText.setCharacterSize(30);
-        tempText.setFillColor(sf::Color::Black);  // Set text color to black
+        tempText.setFillColor(sf::Color::Black);
         tempText.setPosition(80, 500); 
 
 
-        // Clear window and redraw
-        window.clear(sf::Color(135, 206, 235)); // Sky blue background
-        float soc = battery.get_SOC();
-        if (soc >= 100) {
+        //Clear window and redraw
+        window.clear(sf::Color(0, 0, 0)); //Black
+        float soc = battery.get_SOC(); //Check State of charge to display alert
+        if (soc >= 100){
             alertText.setString("Battery Full!");
             
         } else if (soc <= 20) {
@@ -370,35 +355,27 @@ int main(){
         } else {
             alertText.setString("");
         }
-        
-        if (evOn){
+
+        if (evOn){ //Only draw sprites when EV is on
         window.draw(roadSprite1);
         window.draw(roadSprite2);
         window.draw(roadSprite3);
         window.draw(carSprite);
         window.draw(socText);
         window.draw(speedText);
-        
-
-        // Draw UI elements (wheel radius and speed)
-        window.draw(wheelLabel);
         window.draw(tempText);
-        window.draw(wheelValue);
-        window.draw(speedLabel);
-        window.draw(speedBox);
-        window.draw(speedValue);
-        window.draw(uiBoxSprite);  // This is your "box image"
+        window.draw(uiBoxSprite);
         window.draw(alertText);
         }
-
+        
         window.draw(button);
         window.draw(buttonText);
         
-        mouseWasPressed = mousePressed;
-        window.display();
+        mouseWasPressed = mousePressed; //Use this to make sure that the button doesnt react to mouse being held, by updating the state at the end to indicate previous activity for the next run
+        window.display(); //Display everything on the window
 
-        // Delay for smoother movement
-        std::this_thread::sleep_for(std::chrono::milliseconds(16));  // ~60 FPS
+        //Delay for smoother movement
+        std::this_thread::sleep_for(std::chrono::milliseconds(16)); //~60 FPS
 
     }
 

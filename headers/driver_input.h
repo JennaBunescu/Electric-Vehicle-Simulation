@@ -12,8 +12,8 @@ public:
     float get_throttle();
     float get_brake();
     
-    void set_throttle(float intensity);  // Change from double to float
-    void set_brake(float intensity);     // Change from double to float
+    void set_throttle(float intensity);
+    void set_brake(float intensity); 
 };
 
-#endif // DRIVER_INPUT_H
+#endif
