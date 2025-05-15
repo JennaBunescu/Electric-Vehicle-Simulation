@@ -10,7 +10,53 @@
 #include <SFML/Window.hpp>
 #include <fstream>
 
+// cppreference.com
+// https://www.sfml-dev.org/tutorials/3.0/
+
+
 using namespace std;
+
+void averageSpeed(int sampleCount){
+    float* speeds = new float[sampleCount];
+
+    std::ifstream file("output.csv");
+    if (!file.is_open()) {
+        std::cout << "Cannot open log file\n";
+        return;
+    }
+
+    // Skip header line
+    std::string line;
+    std::getline(file, line);
+
+    // For simplicity, just read first sampleCount speeds
+    int i = 0;
+    while (i < sampleCount && std::getline(file, line)) {
+        // CSV format: Time,Speed,SOC,...
+        // Extract speed: after first comma, up to second comma
+
+        size_t firstComma = line.find(',');
+        if (firstComma == std::string::npos) break;
+        size_t secondComma = line.find(',', firstComma + 1);
+        if (secondComma == std::string::npos) break;
+
+        std::string speedStr = line.substr(firstComma + 1, secondComma - firstComma -1);
+        speeds[i] = std::stof(speedStr);
+        i++;
+    }
+
+    // Calculate average speed
+    float sum = 0;
+    for (int j = 0; j < i; j++) {
+        sum += speeds[j];
+    }
+    float averageSpeed = sum / i;
+
+    std::cout << "Average speed over " << i << " samples is: " << averageSpeed << " m/s\n";
+
+    delete[] speeds;
+    return;
+}
 
 bool isMouseOver(const sf::RectangleShape &button, const sf::Vector2f &mousePos){
     return button.getGlobalBounds().contains(mousePos);
