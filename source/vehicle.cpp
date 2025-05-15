@@ -2,11 +2,6 @@
 #include "../headers/components.h"
 
 
-EV::EV(Motor *motorPtr, Battery *batteryPtr)
-    : motor(motorPtr), battery(batteryPtr) {
-    // You can add setup code here if needed
-}
-
 EV::EV(){
     this->on = true;
 }

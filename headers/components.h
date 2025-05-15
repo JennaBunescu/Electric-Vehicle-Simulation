@@ -43,7 +43,20 @@ class Battery{
 
         }
         Battery(float Q_max, float V_max, float R_internal, float heatCapacity, float stateOfHealth);
-        virtual ~Battery() {}
+        ~Battery() {}
+            // Copy constructor
+    Battery(const Battery& other) : Q_max(other.Q_max) {
+        // Copy other members
+    }
+
+    // Assignment operator
+    Battery& operator=(const Battery& other) {
+        if (this != &other) {
+            Q_max = other.Q_max;
+            // Copy other members
+        }
+        return *this;
+    }
         void set_Q_max(float Q);
         void set_Q_current(float Q);
         void set_V_max(float V);
@@ -97,6 +110,19 @@ private:
 
 public:
     Motor();
+        // Copy constructor
+    Motor(const Motor& other) : maxTorque(other.maxTorque) {
+        // Copy other members
+    }
+
+    // Assignment operator
+    Motor& operator=(const Motor& other) {
+        if (this != &other) {
+            maxTorque = other.maxTorque;
+            // Copy other members
+        }
+        return *this;
+    }
 
     Motor(float maxTorque, float maxBrakeTorque, float inertia, float regenEfficiency);
     Motor(float maxTorque){

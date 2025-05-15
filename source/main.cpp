@@ -43,14 +43,6 @@ bool loadAssets(sf::Font &font, sf::Texture &carTexture, sf::Texture &roadTextur
     return true;
 }
 
-// Function to create and position UI elements
-void createUIElements(sf::Font &font, sf::Text &wheelValue, 
-                      sf::Text &speedValue, sf::RectangleShape &wheelBox, sf::RectangleShape &speedBox) {
-
-}
-
-
-
 // Main function
 int main(){
     // Initialize window and clock

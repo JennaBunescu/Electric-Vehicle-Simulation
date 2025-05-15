@@ -19,16 +19,25 @@ class EV{
         float wheelRadius = 0.3f; //Radius of the vehicle's wheels (meters)
 
     public:
-
-        EV(Motor* motorPtr, Battery* batteryPtr);
         EV();
-        EV::EV(float wheelRadius);
+        EV(float wheelRadius);
 
-        EV(Battery* batt) : battery(batt) {}
-        ~EV() { delete battery; }
         void update(float speed, float delta_t) {
             battery->discharge(speed, delta_t);
         }
+                    // Copy constructor
+    EV(const EV& other) : wheelRadius(other.wheelRadius) {
+        // Copy other members
+    }
+
+    // Assignment operator
+    EV& operator=(const EV& other) {
+        if (this != &other) {
+        wheelRadius = other.wheelRadius;
+            // Copy other members
+        }
+        return *this;
+    }
 
 
         // void accelerate(float throttle, float time);
