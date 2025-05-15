@@ -48,17 +48,16 @@ class Battery{ //If it receives a signal from the controller, the battery transm
         float get_SOH();
         float get_temp();
 
-        //this function should be called every time the speed changes, 
-        //to register the previous speed and for how long it ran
+        void setCurrent(float I);
+        void rechargeFromRegen(float deltaQ);
 
-        //or another option is to update this function every fraction of a second and 
-        //use that time increment instead of total time, and keep updating 
-        //the current charge
         void discharge(float speed, float delta_t);
 
         void charge(float V_applied, float time, bool &fullCharge);
 
         float updateTemperature(float delta_t, float ambientTemp);
+
+        void degradeSOH(float delta_t);
 
 
 };
@@ -71,18 +70,27 @@ private:
     float maxCurrent;     // Max current the motor can draw (in Amps)
     float efficiency;     // Efficiency of the motor (between 0 and 1)
     float maxSpeed;       // Maximum motor speed (RPM)
-    float maxTorque = 200.0f;      //200.0f
-    float maxBrakeTorque = 300.0f; //300.0f
-    float inertia = 10.0f;; //10.0f
-    float wheelRadius = 0.3f;; //0.3f
+    float maxTorque = 200;      //200.0f
+    float maxBrakeTorque = 300; //300.0f
+    float inertia = 10; //10.0f
+    float wheelRadius = 0.3f; //0.3f
+    float regenEfficiency = 0.5;
+    float maxRegenPower = 100;
 
 public:
     Motor();
 
+    bool isRegenerating(DriverInput& input);
+
+    void setMaxRegenPower(float power);
+
+    float getMaxRegenPower() const;
+
     float updateSpeed(DriverInput& driverInput, Battery &battery, float deltaTime);
-    void encounterObstacle(){
-        //change "force" throttle/brake of the driver input 
-    }
+    void applyRegenerativeBraking(DriverInput &input, Battery& battery, float deltaTime);
+    float calculateRegenPower(DriverInput &input);
+
+
 
 };
 
@@ -102,8 +110,5 @@ class Charger{
 };
 
 
-class Display{
-
-};
 
 #endif

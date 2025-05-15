@@ -25,6 +25,10 @@ float Battery::get_SOC(){
     return (Q_now / Q_max) * 100.0;
 }
 
+void Battery::setCurrent(float I) {
+    current = I;
+}
+
 //this function should be called repeatedly every fraction of a second
 //and it updates the battery charge incrementally.
 //does temperature affect discharge?
@@ -76,6 +80,18 @@ float Battery::updateTemperature(float delta_t, float ambientTemp) {
     this->temperature += deltaTemp;
 
     return temperature;
+}
+
+void Battery::degradeSOH(float delta_t) {
+    if (temperature > 40.0f) {
+        stateOfHealth -= 0.001f * delta_t * (temperature - 40.0f);
+        if (stateOfHealth < 0) stateOfHealth = 0;
+    }
+}
+
+void Battery::rechargeFromRegen(float deltaQ) {
+    Q_now += deltaQ;
+    if (Q_now > Q_max) Q_now = Q_max;
 }
 
 
@@ -138,11 +154,55 @@ Motor::Motor(){
     maxSpeed = 100;
 }
 
-float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float deltaTime) {
+bool Motor::isRegenerating(DriverInput& input){
+    return (speed > 0 && input.get_brake() > 0);
+}
+
+
+float Motor::calculateRegenPower(DriverInput &input) {
+    if (!isRegenerating(input)) return 0.0f;
+
+    // Basic model: regen torque proportional to braking
+    float regenTorque = input.get_brake() * regenEfficiency * maxTorque;
+
+    // Convert torque to power: P = torque × angular velocity
+    float angularVelocity = speed / wheelRadius;
+    float power = regenTorque * angularVelocity;
+
+    if (power > maxRegenPower) {
+        return maxRegenPower;
+    } else {
+        return power;
+    }
+
+}
+
+void Motor::applyRegenerativeBraking(DriverInput &input, Battery& battery, float deltaTime) {
+    if (!isRegenerating(input)) return;
+
+    float regenPower = calculateRegenPower(input);
+
+    if (regenPower > 0.0f) {
+        float regenVoltage = battery.get_V_max(); // or nominal voltage
+        float regenCurrent = regenPower / regenVoltage;
+
+        float deltaQ = regenCurrent * deltaTime;
+
+        battery.rechargeFromRegen(deltaQ);  // custom method in Battery
+        battery.setCurrent(regenCurrent);   // for monitoring/display
+    }
+}
+
+
+float Motor::updateSpeed(DriverInput &input, Battery &battery, float deltaTime) {
+    if (isRegenerating(input)) {
+        applyRegenerativeBraking(input, battery, deltaTime);
+    }
+
     static float angularSpeed = 0;
 
-    float throttle = driverInput.get_throttle();
-    float brake = driverInput.get_brake();
+    float throttle = input.get_throttle();
+    float brake = input.get_brake();
 
     cout << "Throttle: " << throttle << " | Brake: " << brake << endl;
 
@@ -189,10 +249,33 @@ float Motor::updateSpeed(DriverInput &driverInput, Battery &battery, float delta
     return speed;
 }
 
-
-void Charger::stopCharging(Battery* battery) {
-    if (battery) {
-        //battery->V_applied(0.0f); // TODO: Double check if this needs to be Q current set to 0 or current set to 0. If it is just "current" then we need a setCurrent function in the battery class
-    }
-    cout << "Charging stopped" << endl;
+void Motor:: setMaxRegenPower(float power) {
+    maxRegenPower = power;
 }
+
+float Motor:: getMaxRegenPower() const {
+    return maxRegenPower;
+}
+
+
+
+// /// Charger class
+// Charger::Charger() {
+//     isCharging = false;
+//     maxPowerOutput = 10000.0f; // watts, example max power output
+//     efficiency = 0.9f; // 90% efficiency
+// }
+
+
+
+// void startCharging(Battery* battery) {
+//     isCharging = true;
+//     // simple charging logic
+//     float chargingVoltage = battery->get_V_max();
+//     float chargingCurrent = maxPowerOutput / chargingVoltage * efficiency;
+//     battery->charge(chargingVoltage, 1.0f, isCharging); // 1 second step, update isCharging flag
+// }
+
+// void stopCharging(Battery* battery) {
+//     isCharging = false;
+// }

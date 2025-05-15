@@ -50,6 +50,8 @@ void createUIElements(sf::Font &font, sf::Text &wheelValue,
 
 }
 
+
+
 // Main function
 int main(){
     // Initialize window and clock
@@ -127,6 +129,32 @@ int main(){
     float roadYPosition = 0.0f;
     EV myEV;
 
+
+    sf::RectangleShape button(sf::Vector2f(150, 60));
+    button.setPosition(125.f, 70.f);
+    button.setFillColor(sf::Color(100, 100, 250));
+
+    sf::Text buttonText;
+    buttonText.setFont(font);
+    buttonText.setString("EV ON");
+    buttonText.setCharacterSize(30);
+    buttonText.setFillColor(sf::Color::White);
+    sf::FloatRect textRect = buttonText.getLocalBounds();
+    buttonText.setOrigin(textRect.left + textRect.width / 2.0f,
+                         textRect.top + textRect.height / 2.0f);
+    buttonText.setPosition(
+        button.getPosition().x + button.getSize().x / 2.0f,
+        button.getPosition().y + button.getSize().y / 2.0f);
+
+
+
+    bool evOn = true;
+
+        // Track mouse button previous state
+    bool mouseWasPressed = false;
+
+
+
     while (window.isOpen()) {
         cout << "Hello" << endl;
         sf::Event event;
@@ -138,6 +166,43 @@ int main(){
             if (event.type == sf::Event::Closed)
                 window.close();
         }
+
+
+        // Get current mouse left button state
+        bool mousePressed = sf::Mouse::isButtonPressed(sf::Mouse::Left);
+        sf::Vector2i mousePosI = sf::Mouse::getPosition(window);
+        sf::Vector2f mousePosF(static_cast<float>(mousePosI.x), static_cast<float>(mousePosI.y));
+
+        // Check for mouse press edge (pressed now, but was not pressed before)
+        if (mousePressed && !mouseWasPressed) {
+            // Only toggle if click is inside button bounds
+            if (button.getGlobalBounds().contains(mousePosF)) {
+                evOn = !evOn;
+
+                if (evOn) {
+                    buttonText.setString("EV ON");
+                    button.setFillColor(sf::Color(100, 100, 250));
+                } else {
+                    buttonText.setString("EV OFF");
+                    button.setFillColor(sf::Color(200, 50, 50));
+                }
+                // Re-center text after string update
+                sf::FloatRect textRect = buttonText.getLocalBounds();
+                buttonText.setOrigin(textRect.left + textRect.width / 2.0f,
+                                     textRect.top + textRect.height / 2.0f);
+                buttonText.setPosition(
+                    button.getPosition().x + button.getSize().x / 2.0f,
+                    button.getPosition().y + button.getSize().y / 2.0f);
+            }
+        }
+        // Update mouse previous state for next frame
+        mouseWasPressed = mousePressed;
+
+        if (evOn)
+            window.clear(sf::Color(200, 200, 200));
+        else
+            window.clear(sf::Color::Black);
+
 
 
         // Handle driver inputs
@@ -218,6 +283,7 @@ int main(){
         wheelLabel.setFillColor(sf::Color::Black);  // Set text color to black
         wheelLabel.setPosition(50, 100); 
 
+
         // Update speed text
         sf::Text speedLabel;
         speedLabel.setFont(font);
@@ -228,6 +294,7 @@ int main(){
 
         // Clear window and redraw
         window.clear(sf::Color(135, 206, 235)); // Sky blue background
+        if (evOn){
         window.draw(roadSprite1);
         window.draw(roadSprite2);
         window.draw(roadSprite3);
@@ -236,6 +303,7 @@ int main(){
         window.draw(socText);
         window.draw(speedText);
         window.draw(alertText);
+        
 
         // Draw UI elements (wheel radius and speed)
         window.draw(wheelLabel);
@@ -245,7 +313,10 @@ int main(){
         window.draw(speedBox);
         window.draw(speedValue);
         window.draw(uiBoxSprite);  // This is your "box image"
+        }
 
+        window.draw(button);
+        window.draw(buttonText);
         window.display();
 
         // Delay for smoother movement
