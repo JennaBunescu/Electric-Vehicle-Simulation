@@ -2,13 +2,14 @@
 #include "../headers/components.h"
 
 EV::EV(){
+    wheelRadius = 0.5;
     this->on = true;
 }
 
 //constructor that checks if user chose their own parameters or if they chose default value
 EV::EV(float wheelRadius){
     if(wheelRadius == -1){
-        this->wheelRadius = 0.3;
+        this->wheelRadius = 0.5;
     } else {
         this->wheelRadius = wheelRadius;
     }

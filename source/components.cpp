@@ -103,8 +103,8 @@ void Battery::discharge(float speed, float delta_t){
 //@param V_applied - Charging station applies a voltage, delta_t - how long was this voltage applied for, isFull - indicates if the battery is full
 bool Battery::charge(float V_applied, float delta_t, bool &isFull){
     //The change in charge is the current applied (V_applied/R_internal) times the change in time (which will be every frame)
-    float deltaQ = delta_t*V_applied/R_internal; 
-    
+    float deltaQ = delta_t*V_applied/(1000*R_internal); 
+
     //Ensure that Q_now is capped at Q_max
     if(Q_now < Q_max){
         Q_now += deltaQ;
@@ -340,7 +340,7 @@ float Motor::calculateRegenPower(DriverInput &input) {
     }
 }
 
-
+//@brief function that handles regenerative braking (chargers the battery as the vehicle brakes)
 void Motor::applyRegenerativeBraking(DriverInput &input, EV &vehicle, Battery& battery, float deltaTime) {
     if (!isRegenerating(input)){ 
         return;} //check if it's regenerating again, just in case
@@ -445,7 +445,7 @@ Charger::Charger(){
 void Charger::startCharging(Battery &battery, float delta_t){
     isCharging = true;
     //simple charging logic
-    float chargingVoltage = battery.get_V_max(); //set charging voltage based on max voltage of battery
+    float chargingVoltage = 0.2 *battery.get_V_max(); //set charging voltage based on max voltage of battery
     float chargingCurrent = maxPowerOutput / chargingVoltage * efficiency; //current = power / voltage * efficiency
     if(battery.charge(chargingVoltage, delta_t, isCharging) == true){
         //if true then stop charging

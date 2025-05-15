@@ -2,7 +2,6 @@
 // Jesiah Le
 // CS172 Final project
 // Simulation of an Electrical vehicle
-
 #include <iostream>
 #include <string>
 #include <thread>
@@ -11,19 +10,18 @@
 #include "../headers/vehicle.h"
 #include "../headers/components.h"
 #include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>  // For sf::Clock
+#include <SFML/System.hpp>  //For sf::Clock
 #include <SFML/Window.hpp>
 #include <fstream>
 
-// cppreference.com
-// https://www.sfml-dev.org/tutorials/3.0/
-
+// https://en.cppreference.com/w/cpp/thread/sleep_for
+// https://cplusplus.com/reference/string/string/find/
+// https://cplusplus.com/reference/string/string/substr/
+// We learned all the SFML functionality from this code on this website: https://www.sfml-dev.org/tutorials/2.6/
 
 using namespace std;
 
-#include <iostream>
-#include <limits>  // for std::numeric_limits
-using namespace std;
+
 
 //@brief function to ensure valid, non-negative, real number input. Only -1 is allowed as a default choice,
 //@param prompt - the message asking for input
@@ -53,59 +51,81 @@ float getValidatedInput(string prompt){
 }
 
 
-//@brief gets the average speed over a sample
-//@param sampleCount - number of data points to use
-void averageSpeed(int sampleCount){
+//@brief gets the average speed over sampled time intervals
+//@param sampleCount - number of data points to use, sampleInterval - number of seconds between each sample
+void averageSpeed(int sampleCount, float sampleInterval){
+    //dynamically allocate memory for storing the speed samples
     float* speeds = new float[sampleCount];
 
-    std::ifstream file("output.csv");
-    if (!file.is_open()) {
-        std::cout << "Cannot open log file\n";
+    ifstream file("output.csv"); //get the speed samples from the output file
+    if (!file.is_open()){
+        std::cout << "Cannot open file\n";
         return;
     }
 
-    // Skip header line
-    std::string line;
-    std::getline(file, line);
+    string line;
+    //skip the header line
+    getline(file, line);
 
-    // For simplicity, just read first sampleCount speeds
-    int i = 0;
-    while (i < sampleCount && std::getline(file, line)) {
-        // CSV format: Time,Speed,SOC,...
-        // Extract speed: after first comma, up to second comma
+    float lastSampleTime = -sampleInterval;  //initialize and sample the first entry
+    int i = 0;  //Counter for how many samples we've read
 
-        size_t firstComma = line.find(',');
-        if (firstComma == std::string::npos) break;
-        size_t secondComma = line.find(',', firstComma + 1);
-        if (secondComma == std::string::npos) break;
+    //Loop through each line of the CSV until we have enough samples
+    while (i < sampleCount && getline(file, line)){
+        //Find the first comma to extract the timestamp
+        int firstComma = line.find(','); //we need to know where the first comma ends to accurately parse the for the time stamp
+        if (firstComma == -1){
+            break; //line.find() returns - 1 when assigned to an int and if the comma isn't found
+        }
 
-        std::string speedStr = line.substr(firstComma + 1, secondComma - firstComma -1);
-        speeds[i] = std::stof(speedStr);
-        i++;
+        //extract the time and convert from string to float using stof()
+        float time = stof(line.substr(0, firstComma));
+
+        //find the second comma to get the speed
+        int secondComma = line.find(',', firstComma + 1);
+        if (secondComma == -1){
+            break;
+        }
+
+        //extract the speed and convert to float
+        float speed = stof(line.substr(firstComma + 1, secondComma - firstComma - 1));
+
+        //Only take this speed if enough time has passed since the last sample
+        if (time - lastSampleTime >= sampleInterval){
+            speeds[i] = speed; //Store the sampled speed
+            lastSampleTime = time; //update the last sampled time
+            i++; //Move to the next sample
+        }
     }
 
-    // Calculate average speed
-    float sum = 0;
-    for (int j = 0; j < i; j++) {
-        sum += speeds[j];
+    //if no samples were collected, notify the user
+    if (i == 0){
+       cout << "No samples collected.\n";
+    } else{
+        //Here is where we calculate the average of all collected speed samples
+        float sum = 0;
+        for (int j = 0; j < i; j++){
+            sum += speeds[j];
+        }
+        float averageSpeed = sum / i;
+
+        cout << "Average speed over " << i << " samples (every " << sampleInterval << "s): " << averageSpeed << " m/s\n";
     }
-    float averageSpeed = sum / i;
 
-    std::cout << "Average speed over " << i << " samples is: " << averageSpeed << " m/s\n";
-
-    delete[] speeds;
-    return;
+    delete[] speeds; //free memory
 }
 
 
-//Helper function to create a button on the display
+
+//@brief helper function to create a button on the display
 void setupButton(sf::RectangleShape &button, sf::Vector2f size, sf::Vector2f position, sf::Color color){
     button.setSize(size);
     button.setPosition(position);
     button.setFillColor(color);
 }
 
-//Function to initialize assets (fonts, textures, and sprites)
+//@brief function to initialize assets (fonts, textures, and sprites)
+//@param assets
 bool loadAssets(sf::Font &font, sf::Texture &carTexture, sf::Texture &roadTexture1,
     sf::Texture &roadTexture2, sf::Texture &roadTexture3, sf::Texture &uiBoxTexture){
     if (!font.loadFromFile("./assets/Roboto.ttf")){ //check for success
@@ -201,7 +221,7 @@ int main(){
         << input.get_brake() << "\n";
 
         //handle window events
-        while (window.pollEvent(event)) {
+        while (window.pollEvent(event)){
             if (event.type == sf::Event::Closed)
                 window.close();
         }
@@ -211,10 +231,9 @@ int main(){
         sf::Vector2i mousePosI = sf::Mouse::getPosition(window);
         sf::Vector2f mousePosF(static_cast<float>(mousePosI.x), static_cast<float>(mousePosI.y));
 
-
-
         //Check for mouse press (pressed now, but was not pressed before)
         if (mousePressed && !mouseWasPressed){
+
             //Only toggle if click is inside button bounds
             if (button.getGlobalBounds().contains(mousePosF)){
                 evOn = !evOn; //change evOn state
@@ -226,7 +245,7 @@ int main(){
                     buttonText.setString("EV OFF"); //change to off
                     button.setFillColor(sf::Color(200, 50, 50));
 
-                    //Ask for input into the terminal if the EV is off, to start new battery
+                    //Ask for input into the terminal if the EV is off, to start new "session"
                     cout << "Enter '-1' if you want to set any elements to their default value." << endl;
                     float newBatteryCapacity = getValidatedInput("Enter new battery capacity (Ah): ");
                     float newBatteryVMAX = getValidatedInput("Enter new battery max voltage (V): ");
@@ -236,14 +255,13 @@ int main(){
                     float newMaxSpeed = getValidatedInput("Enter new motor max speed (rad/s): ");
                     float newWheelRadius = getValidatedInput("Enter new wheel radius (m): ");
 
-                    //Create new motor, vehicle, and battery based on user input
+                    //Create new objects based on new inputs
                     Motor newMotor(newMaxTorque, newMaxSpeed);
                     Battery newBattery(newBatteryCapacity, newBatteryVMAX, newBatteryRinternal, newBatteryHeatCap);
                     EV newEV(newWheelRadius);
 
-                    //Replace old components with new ones
                     motor = newMotor;
-                    battery = newBattery;
+                    battery = newBattery; //Replace old components with new ones
                     myEV = newEV;
 
                     cout << "EV components updated!\n\n";
@@ -262,36 +280,22 @@ int main(){
             window.clear(sf::Color::Black);
         }
 
-        //Battery status alert 
-        sf::Text chargingAlert;
-        chargingAlert.setFont(font);
-        chargingAlert.setString("Charging!");
-        chargingAlert.setCharacterSize(50);
-        chargingAlert.setFillColor(sf::Color::Green);
-        chargingAlert.setStyle(sf::Text::Bold);
-        chargingAlert.setPosition(80, 350);
-
         //Handle driver inputs 
         //Check if W is pressed
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
-            input.set_throttle(1.0);  //W represents full throttle
-        } else {
+            input.set_throttle(1.0); //W represents full throttle
+        } else{
             input.set_throttle(0.0); //If W is not pressed, throttle is 0
         }
         //Check if S is pressed - braking
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)){
-            input.set_brake(1.0);  //Full brake
+            input.set_brake(1.0); //S - full brake
         } else {
             input.set_brake(0.0);
         }
-        //Check if "C" is pressed - this is to charge the battery
+        //Check if "C" is pressed - this is to charge the battery. This can only be done when vehicle is stationary
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)){
-            motor.set_speed(0);
             charger.startCharging(battery, deltaTime);
-            if (charger.get_charging_state() == true){
-                window.draw(chargingAlert);
-            }
-            
         }
 
         //Update vehicle speed and battery temperature
@@ -317,7 +321,7 @@ int main(){
         alertText.setStyle(sf::Text::Bold);
         alertText.setPosition(80, 300);
 
-        //Update SOC text
+        //SOC text
         sf::Text socText;
         socText.setFont(font);
         socText.setString("Battery SOC: " + to_string(static_cast<int>(battery.get_SOC())) + "%");
@@ -340,8 +344,7 @@ int main(){
         tempText.setString("Battery Temperature: " + to_string(static_cast<int>(battery.get_temp())) + " C");
         tempText.setCharacterSize(30);
         tempText.setFillColor(sf::Color::Black);
-        tempText.setPosition(80, 500); 
-
+        tempText.setPosition(80, 500);
 
         //Clear window and redraw
         window.clear(sf::Color(0, 0, 0)); //Black
@@ -349,10 +352,10 @@ int main(){
         if (soc >= 100){
             alertText.setString("Battery Full!");
             
-        } else if (soc <= 20) {
+        } else if(soc <= 20){
             alertText.setString("Battery Low!");
             
-        } else {
+        } else{
             alertText.setString("");
         }
 
@@ -380,5 +383,6 @@ int main(){
     }
 
     logFile.close();
+    averageSpeed(100, 1); //100 every samples for every two seconds. If there isn't enought data to satisfy this, the function will use the data that does exist, so less samples than asked for essentially
     return 0;
 }

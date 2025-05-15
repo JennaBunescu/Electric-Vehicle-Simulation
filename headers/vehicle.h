@@ -1,7 +1,7 @@
 #ifndef VEHICLE_H
 #define VEHICLE_H
-#include "components.h"
-#include "driver_input.h"
+#include "../headers/components.h"
+#include "../headers/driver_input.h"
 #include <iostream>
 using namespace std;
 
@@ -14,7 +14,7 @@ class EV{
         Battery* battery;
         Motor* motor;
         bool obstacle;
-        float wheelRadius = 0.3; //Radius of the vehicle's wheels (meters)
+        float wheelRadius; //Radius of the vehicle's wheels (meters)
 
     public:
         EV();
