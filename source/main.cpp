@@ -2,27 +2,26 @@
 #include <string>
 #include <thread>
 #include <chrono>
-#include "../headers/components.h"
 #include "../headers/driver_input.h"
 #include "../headers/vehicle.h"
+#include "../headers/components.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>  // For sf::Clock
 #include <SFML/Window.hpp>
+#include <fstream>
 
 using namespace std;
 
-bool isMouseOver(const sf::RectangleShape &button, const sf::Vector2f &mousePos) {
+bool isMouseOver(const sf::RectangleShape &button, const sf::Vector2f &mousePos){
     return button.getGlobalBounds().contains(mousePos);
 }
 
 // Helper function to create a button
-void setupButton(sf::RectangleShape &button, sf::Vector2f size, sf::Vector2f position, sf::Color color) {
+void setupButton(sf::RectangleShape &button, sf::Vector2f size, sf::Vector2f position, sf::Color color){
     button.setSize(size);
     button.setPosition(position);
     button.setFillColor(color);
 }
-
-
 
 // Function to initialize SFML assets like fonts, textures, and sprites
 bool loadAssets(sf::Font &font, sf::Texture &carTexture, sf::Texture &roadTexture1,
@@ -59,13 +58,6 @@ int main(){
     // Initialize window in normal mode (not fullscreen)
     sf::RenderWindow window(sf::VideoMode(1280, 720), "Electric Vehicle Simulation");  // Example size (1280x720)
 
-    sf::RectangleShape togglePowerBtn, defaultBtn, runBtn, statsBtn, backBtn;
-    setupButton(togglePowerBtn, {200, 50}, {1000, 20}, sf::Color::Green);
-    setupButton(defaultBtn,     {200, 50}, {540, 300}, sf::Color::Yellow);
-    setupButton(runBtn,         {200, 50}, {540, 400}, sf::Color::Cyan);
-    setupButton(statsBtn,       {50, 100}, {10, 300}, sf::Color(100, 100, 250));
-    setupButton(backBtn,        {150, 50}, {1060, 20}, sf::Color(200, 100, 100));
-
     // Load assets (font, textures, etc.)
     sf::Font font;
     sf::Texture carTexture, roadTexture1, roadTexture2, roadTexture3, batteryTexture, uiBoxTexture;
@@ -87,9 +79,25 @@ int main(){
     inputText.setFillColor(sf::Color::Black);
     inputText.setPosition(105, 105);
 
+
     // Input state
     std::string currentInput;
     bool isFocused = false;
+
+
+    sf::RectangleShape inputBox(sf::Vector2f(400, 50));
+    inputBox.setFillColor(sf::Color::White);
+    inputBox.setOutlineColor(sf::Color::Black);
+    inputBox.setOutlineThickness(2);
+    inputBox.setPosition(100, 75);
+
+    inputText.setFont(font);
+    inputText.setFillColor(sf::Color::Black);
+    inputText.setCharacterSize(24);
+    inputText.setPosition(110, 80);
+
+    std::string userInput;
+
 
 
     // Create sprites
@@ -153,12 +161,23 @@ int main(){
         // Track mouse button previous state
     bool mouseWasPressed = false;
 
-
+    
+    std::ofstream logFile("output.csv");
+    logFile << "Time,Speed,SOC,BatteryTemp,Throttle,Brake\n";
+    float totalTime = 0.0f;  // to track time for the loop of updates
 
     while (window.isOpen()) {
-        cout << "Hello" << endl;
         sf::Event event;
         float deltaTime = deltaClock.restart().asSeconds();
+
+        //logging battery state to csv
+        totalTime += deltaTime;
+        logFile << totalTime << "," 
+        << vehicleSpeed << "," 
+        << battery.get_SOC() << "," 
+        << battery.get_temp() << "," 
+        << input.get_throttle() << "," 
+        << input.get_brake() << "\n";
 
 
         // Handle window events
@@ -172,6 +191,8 @@ int main(){
         bool mousePressed = sf::Mouse::isButtonPressed(sf::Mouse::Left);
         sf::Vector2i mousePosI = sf::Mouse::getPosition(window);
         sf::Vector2f mousePosF(static_cast<float>(mousePosI.x), static_cast<float>(mousePosI.y));
+
+
 
         // Check for mouse press edge (pressed now, but was not pressed before)
         if (mousePressed && !mouseWasPressed) {
@@ -195,13 +216,13 @@ int main(){
                     button.getPosition().y + button.getSize().y / 2.0f);
             }
         }
-        // Update mouse previous state for next frame
-        mouseWasPressed = mousePressed;
+        if (evOn){
 
-        if (evOn)
             window.clear(sf::Color(200, 200, 200));
-        else
+        }
+        else{
             window.clear(sf::Color::Black);
+        }
 
 
 
@@ -220,11 +241,12 @@ int main(){
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::P)) {
             myEV.powerOff();
+            break;
             // Reset input parameters
         }
 
         // Update vehicle speed and battery temperature
-        vehicleSpeed = motor.updateSpeed(input, battery, deltaTime);
+        vehicleSpeed = motor.updateSpeed(input, myEV ,battery, deltaTime);
         batteryTemp = battery.updateTemperature(deltaTime, ambientTemp);
 
 
@@ -323,6 +345,6 @@ int main(){
         std::this_thread::sleep_for(std::chrono::milliseconds(16));  // ~60 FPS
     }
 
+    logFile.close();
     return 0;
 }
-

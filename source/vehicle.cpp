@@ -1,4 +1,6 @@
 #include "../headers/vehicle.h"
+#include "../headers/components.h"
+
 
 EV::EV(Motor *motorPtr, Battery *batteryPtr)
     : motor(motorPtr), battery(batteryPtr) {
@@ -7,6 +9,10 @@ EV::EV(Motor *motorPtr, Battery *batteryPtr)
 
 EV::EV(){
     this->on = true;
+}
+
+float EV::get_wheelRadius(){
+    return wheelRadius;
 }
 
 // void EV::accelerate(float throttle, float time) {
