@@ -22,6 +22,12 @@ class EV{
         EV(Motor* motorPtr, Battery* batteryPtr);
         EV();
 
+        EV(Battery* batt) : battery(batt) {}
+        ~EV() { delete battery; }
+        void update(float speed, float delta_t) {
+            battery->discharge(speed, delta_t);
+        }
+
 
         // void accelerate(float throttle, float time);
         // void brake(float force, float time);
@@ -36,5 +42,7 @@ class EV{
         void setDragCoefficient(float c);
         void setFrontalArea(float a);
     };
+
+
 
 #endif

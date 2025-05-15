@@ -32,7 +32,9 @@ class Battery{ //If it receives a signal from the controller, the battery transm
     // 3. using regenerative braking? NO
     // 4. connecting the battery's voltage to the motor
     public:
+        
         Battery();
+        virtual ~Battery() {}
         void set_Q_max(float Q);
         void set_Q_current(float Q);
         void set_V_max(float V);
@@ -51,7 +53,7 @@ class Battery{ //If it receives a signal from the controller, the battery transm
         void setCurrent(float I);
         void rechargeFromRegen(float deltaQ);
 
-        void discharge(float speed, float delta_t);
+        virtual void discharge(float speed, float delta_t) = 0;
 
         void charge(float V_applied, float time, bool &fullCharge);
 
@@ -59,14 +61,29 @@ class Battery{ //If it receives a signal from the controller, the battery transm
 
         void degradeSOH(float delta_t);
 
+        float estimateRangeLeft(float energyPerKm) const;
 
+        void degradeWithCycle(float deltaQ);
+
+
+};
+
+
+
+class LithiumBattery : public Battery {
+    void discharge(float speed, float delta_t) override { /* lithium specific */ }
+};
+
+class LeadAcidBattery : public Battery {
+    void discharge(float speed, float delta_t) override { /* lead-acid specific */ }
 };
 
 class Motor {
 private:
-    float currentDemand;  // Current required by the motor in Amps
+    float current;  // Current required by the motor in Amps
     float speed;          // Speed of the vehicle in km/h
     float powerRating;    // Power rating in kilowatts (kW)
+    float R_internal;
     float maxCurrent;     // Max current the motor can draw (in Amps)
     float efficiency;     // Efficiency of the motor (between 0 and 1)
     float maxSpeed;       // Maximum motor speed (RPM)
@@ -76,6 +93,10 @@ private:
     float wheelRadius = 0.3f; //0.3f
     float regenEfficiency = 0.5;
     float maxRegenPower = 100;
+    float heatTransferCoeff = 1.2;
+    float temperature;
+    float heatCapacity = 12;
+
 
 public:
     Motor();
@@ -89,6 +110,7 @@ public:
     float updateSpeed(DriverInput& driverInput, Battery &battery, float deltaTime);
     void applyRegenerativeBraking(DriverInput &input, Battery& battery, float deltaTime);
     float calculateRegenPower(DriverInput &input);
+    float updateTemperature(float delta_t, float ambientTemp);
 
 
 

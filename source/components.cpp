@@ -94,6 +94,41 @@ void Battery::rechargeFromRegen(float deltaQ) {
     if (Q_now > Q_max) Q_now = Q_max;
 }
 
+float Battery::estimateRangeLeft(float energyPerKm) const {
+    // energyPerKm = how many Wh are used per kilometer (e.g., 150 Wh/km)
+
+    // Total energy remaining in Wh
+    float energyLeftWh = (Q_now * voltage);  // Ah * V = Wh
+
+    // Estimate remaining kilometers
+    float rangeKm = energyLeftWh / energyPerKm;
+
+    return rangeKm;
+}
+
+void Battery::degradeWithCycle(float deltaQ) {
+    // Static variable to accumulate charge moved over multiple calls (across cycles)
+    static float cycleCharge = 0;
+
+    // Add the absolute value of deltaQ (charge used or replenished) to the cycle accumulator
+    cycleCharge += abs(deltaQ);
+
+    // When the accumulated charge reaches or exceeds the battery's max capacity,
+    // we consider one full charge-discharge cycle completed
+    if (cycleCharge >= Q_max) {
+        // Decrease the state of health (SOH) by 2% per full cycle
+        stateOfHealth -= 0.02f;
+
+        // Prevent SOH from dropping below 0%
+        if (stateOfHealth < 0) 
+            stateOfHealth = 0;
+
+        // Reset the cycle charge counter for the next cycle
+        cycleCharge = 0;
+    }
+}
+
+
 
 //setters
 void Battery::set_Q_max(float Q){
@@ -256,6 +291,26 @@ void Motor:: setMaxRegenPower(float power) {
 float Motor:: getMaxRegenPower() const {
     return maxRegenPower;
 }
+
+float Motor::updateTemperature(float delta_t, float ambientTemp) {
+    // Calculate heat generated in the motor due to current and resistance (I^2 * R * t)
+    float heatGenerated = current * current * R_internal * delta_t;
+
+    // Calculate heat lost to the environment via convection (h * (T_motor - T_ambient) * t)
+    float cooling = heatTransferCoeff * (temperature - ambientTemp) * delta_t;
+
+    // Net heat change inside the motor
+    float netHeat = heatGenerated - cooling;
+
+    // Temperature change (deltaTemp = netHeat / heatCapacity)
+    float deltaTemp = netHeat / heatCapacity;
+
+    // Update motor temperature
+    temperature += deltaTemp;
+
+    return temperature;
+}
+
 
 
 
