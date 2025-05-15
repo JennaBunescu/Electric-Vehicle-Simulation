@@ -325,16 +325,7 @@ int main(){
         alertText.setCharacterSize(50);
         alertText.setFillColor(sf::Color::Red);
         alertText.setStyle(sf::Text::Bold);
-        alertText.setPosition(100, 600); // Position near top center
-
-
-        if (battery.get_SOC() >= 99) {
-            alertText.setString("Battery Full!");
-            window.draw(alertText);
-        } else if (battery.get_SOC() <= 20) {
-            alertText.setString("Battery Low!");
-            window.draw(alertText);
-        }
+        alertText.setPosition(100, 800); // Position near top center
 
 
         // Update SOC text
@@ -353,25 +344,28 @@ int main(){
         speedText.setFillColor(sf::Color::Black);  // Set text color to black
         speedText.setPosition(80, 450);  // Place text overlapping uiBoxSprite
 
-                // Update SOC text
-        sf::Text wheelLabel;
-        wheelLabel.setFont(font);
-        wheelLabel.setString("Battery SOC: " + to_string(static_cast<int>(battery.get_SOC())) + "%");
-        wheelLabel.setCharacterSize(30);
-        wheelLabel.setFillColor(sf::Color::Black);  // Set text color to black
-        wheelLabel.setPosition(80, 500); 
+        // Update SOC text
+        sf::Text tempText;
+        tempText.setFont(font);
+        tempText.setString("Battery Temperature: " + to_string(static_cast<int>(battery.get_temp())) + "C");
+        tempText.setCharacterSize(30);
+        tempText.setFillColor(sf::Color::Black);  // Set text color to black
+        tempText.setPosition(80, 500); 
 
-
-        // Update speed text
-        sf::Text speedLabel;
-        speedLabel.setFont(font);
-        speedLabel.setString("Speed: " + to_string(static_cast<int>(vehicleSpeed)) + " m/s");
-        speedLabel.setCharacterSize(30);
-        speedLabel.setFillColor(sf::Color::Black);  // Set text color to black
-        speedLabel.setPosition(80, 550);  // Place text overlapping uiBoxSprite
 
         // Clear window and redraw
         window.clear(sf::Color(135, 206, 235)); // Sky blue background
+        float soc = battery.get_SOC();
+        if (soc >= 100) {
+            alertText.setString("Battery Full!");
+            
+        } else if (soc <= 20) {
+            alertText.setString("Battery Low!");
+            
+        } else {
+            alertText.setString("");
+        }
+        
         if (evOn){
         window.draw(roadSprite1);
         window.draw(roadSprite2);
@@ -383,12 +377,13 @@ int main(){
 
         // Draw UI elements (wheel radius and speed)
         window.draw(wheelLabel);
-        window.draw(wheelBox);
+        window.draw(tempText);
         window.draw(wheelValue);
         window.draw(speedLabel);
         window.draw(speedBox);
         window.draw(speedValue);
         window.draw(uiBoxSprite);  // This is your "box image"
+        window.draw(alertText);
         }
 
         window.draw(button);

@@ -108,7 +108,7 @@ void Battery::charge(float V_applied, float delta_t, bool &isFull){
 float Battery::updateTemperature(float delta_t, float ambientTemp){
 
     //Q = I^2 * R * t
-    float heatGenerated = current * current * R_internal * delta_t;
+    float heatGenerated = 1000* current * current * R_internal * delta_t;
 
     //Q = h * (T_batt - T_ambient) * t
     float cooling = heatTransferCoeff * (temperature - ambientTemp) * delta_t;
@@ -120,7 +120,7 @@ float Battery::updateTemperature(float delta_t, float ambientTemp){
     float deltaTemp = netHeat / heatCapacity;
 
     //Update temperature attribute value
-    this->temperature += deltaTemp;
+    this->temperature += deltaTemp+0.02;
 
     return temperature;
 }

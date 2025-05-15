@@ -46,13 +46,14 @@ class Battery{
         ~Battery() {}
             // Copy constructor
     Battery(const Battery& other) : Q_max(other.Q_max) {
-        // Copy other members
+        Q_now = other.Q_max;
     }
 
     // Assignment operator
     Battery& operator=(const Battery& other) {
         if (this != &other) {
             Q_max = other.Q_max;
+            Q_now = other.Q_max;
             // Copy other members
         }
         return *this;
